@@ -9,7 +9,16 @@ import {
   HiOutlineVolumeUp,
   HiOutlineVolumeOff,
 } from 'react-icons/hi'
-import { processAiMessage, resetAiChat, transcribeAudio, getMessages, addUiMessage, type Message } from '../../services'
+import { 
+  processAiMessage, 
+  resetAiChat, 
+  transcribeAudio, 
+  getMessages, 
+  addUiMessage, 
+  speakTextNeural,
+  stopSpeech,
+  type Message 
+} from '../../services'
 import './AiAssistant.css'
 
 const ACTION_LABELS: Record<string, { label: string; color: string }> = {
@@ -125,9 +134,19 @@ export default function AiAssistant() {
     }
   }
 
-  const speakText = (text: string) => {
-    if (!('speechSynthesis' in window)) return
+  const speakText = async (text: string) => {
+    // Attempt high-quality neural voice first
+    console.log('[AiAssistant] Attempting Neural Studio Voice...')
+    const success = await speakTextNeural(text)
     
+    if (success) {
+      console.log('[AiAssistant] Neural Studio Voice active ✅')
+      return
+    }
+
+    console.warn('[AiAssistant] Neural Voice failed or API not configured. Falling back to Browser TTS ⚠️')
+    if (!('speechSynthesis' in window)) return
+
     // Stop any current speech
     window.speechSynthesis.cancel()
 
@@ -141,10 +160,9 @@ export default function AiAssistant() {
       .trim()
 
     const utterance = new SpeechSynthesisUtterance(cleanText)
-    
+
     // Voice Personality Settings
     const voices = window.speechSynthesis.getVoices()
-    // Prioritize natural sounding/premium voices
     const preferredVoice = voices.find(v => 
       v.name.includes('Google US English') || 
       v.name.includes('Natural') ||
@@ -157,7 +175,7 @@ export default function AiAssistant() {
     utterance.rate = 0.95 // Slightly slower for clarity & professionalism
     utterance.pitch = 1.05 // Slightly higher for a friendly/clear tone
     utterance.volume = 1.0
-    
+
     window.speechSynthesis.speak(utterance)
   }
 
@@ -165,13 +183,16 @@ export default function AiAssistant() {
     const newState = !isVoiceEnabled
     setIsVoiceEnabled(newState)
     if (!newState) {
-      window.speechSynthesis.cancel()
+      stopSpeech() // Stop neural audio
+      window.speechSynthesis.cancel() // Stop browser audio
     }
   }
 
   const handleReset = () => {
     const welcome = resetAiChat()
     setMessages([welcome])
+    stopSpeech()
+    window.speechSynthesis.cancel()
   }
 
   const handleSend = async () => {
@@ -256,6 +277,7 @@ export default function AiAssistant() {
           </button>
         </div>
       </header>
+
 
       <div className="ai-chat-window">
         <div className="ai-messages-list">
