@@ -1,0 +1,57 @@
+.preloader-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: #0a0a0a; /* Deep dark background for cinematic start */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.preloader-content {
+  text-align: center;
+  position: relative;
+}
+
+.preloader-text {
+  font-family: var(--font-primary, 'Outfit', sans-serif);
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.04em;
+  position: relative;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+  line-height: 1.2;
+}
+
+.preloader-text .text-accent {
+  color: var(--color-accent, #c19b6c);
+}
+
+.animated-underline {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: var(--color-accent, #c19b6c);
+  border-radius: 2px;
+  box-shadow: 0 0 15px rgba(193, 155, 108, 0.4);
+}
+
+.preloader-subtext {
+  font-family: var(--font-secondary, 'Inter', sans-serif);
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .preloader-text {
+    font-size: 2.2rem;
+  }
+}
