@@ -11,8 +11,6 @@ import {
 import './admin-common.css'
 import './ActivityLog.css'
 
-const ENTITY_TYPES: ActivityEntityType[] = ['property', 'client', 'deal', 'inquiry', 'settings', 'other']
-const ACTIONS: ActivityAction[] = ['created', 'updated', 'archived', 'restored', 'deleted', 'status_changed', 'assigned', 'login', 'other']
 
 /** Human-readable relative time for activity "When" column. */
 function formatActivityWhen(iso: string): string {
@@ -44,23 +42,31 @@ function formatActivityWhen(iso: string): string {
 }
 
 export default function ActivityLog() {
-  const [entityFilter, setEntityFilter] = useState<ActivityEntityType | 'all'>('all')
-  const [actionFilter, setActionFilter] = useState<ActivityAction | 'all'>('all')
-  const [actorFilter, setActorFilter] = useState('')
-  const [detailsFilter, setDetailsFilter] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const entries = getActivityStore()
+
+  const searchHaystack = (e: ActivityLogEntry): string => {
+    return [
+      e.actor,
+      getActivityActionLabel(e.action),
+      getActivityEntityLabel(e.entityType),
+      e.entityLabel ?? '',
+      e.details,
+      formatActivityWhen(e.at),
+    ]
+      .join(' ')
+      .toLowerCase()
+  }
+
   const filtered = useMemo(() => {
-    return entries
-      .filter((e) => {
-        if (entityFilter !== 'all' && e.entityType !== entityFilter) return false
-        if (actionFilter !== 'all' && e.action !== actionFilter) return false
-        if (actorFilter.trim() && !e.actor.toLowerCase().includes(actorFilter.trim().toLowerCase())) return false
-        if (detailsFilter.trim() && !e.details.toLowerCase().includes(detailsFilter.trim().toLowerCase())) return false
-        return true
-      })
-      .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
-  }, [entries, entityFilter, actionFilter, actorFilter, detailsFilter])
+    let list = [...entries]
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase()
+      list = list.filter((e) => searchHaystack(e).includes(q))
+    }
+    return list.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
+  }, [entries, searchQuery])
 
   const entityLink = (e: ActivityLogEntry) => {
     if (e.entityType === 'property' && e.entityId) return `/admin/properties/${e.entityId}`
@@ -72,47 +78,28 @@ export default function ActivityLog() {
     <div className="admin-activity-log">
       <h1 className="admin-page-title">Activity / Audit Log</h1>
       <p className="admin-page-subtitle">
-        Track who changed what and when. Sino nagbago, kailan, at bakit.
+        Track who changed what and when. Global search across all fields.
       </p>
-      <div className="admin-toolbar activity-log-toolbar">
-        <select
-          className="admin-input"
-          value={entityFilter}
-          onChange={(e) => setEntityFilter(e.target.value as ActivityEntityType | 'all')}
-          style={{ minWidth: '120px' }}
-        >
-          <option value="all">All types</option>
-          {ENTITY_TYPES.map((t) => (
-            <option key={t} value={t}>{getActivityEntityLabel(t)}</option>
-          ))}
-        </select>
-        <select
-          className="admin-input"
-          value={actionFilter}
-          onChange={(e) => setActionFilter(e.target.value as ActivityAction | 'all')}
-          style={{ minWidth: '140px' }}
-        >
-          <option value="all">All actions</option>
-          {ACTIONS.map((a) => (
-            <option key={a} value={a}>{getActivityActionLabel(a)}</option>
-          ))}
-        </select>
+
+      <div className="admin-search-wrapper">
         <input
-          type="text"
-          className="admin-input"
-          placeholder="Filter by actor..."
-          value={actorFilter}
-          onChange={(e) => setActorFilter(e.target.value)}
-          style={{ minWidth: '140px' }}
+          type="search"
+          className="admin-input activity-log-search"
+          placeholder="Search actor, action, type, entity, or details..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          autoFocus
         />
-        <input
-          type="text"
-          className="admin-input"
-          placeholder="Search details..."
-          value={detailsFilter}
-          onChange={(e) => setDetailsFilter(e.target.value)}
-          style={{ minWidth: '160px' }}
-        />
+        {searchQuery && (
+          <button 
+            type="button" 
+            className="search-clear-btn" 
+            onClick={() => setSearchQuery('')}
+            aria-label="Clear search"
+          >
+            &times;
+          </button>
+        )}
       </div>
       <div className="admin-table-wrap">
         <table className="admin-table activity-log-table">

@@ -61,6 +61,20 @@ class InquiryController extends Controller
         ]);
     }
 
+    public function destroy(string $id): JsonResponse
+    {
+        $inquiry = Inquiry::query()->find($id);
+        if (! $inquiry) {
+            return ApiResponse::failure('Not found.', 404);
+        }
+
+        $inquiry->delete();
+
+        return ApiResponse::success([
+            'message' => 'Inquiry archived successfully.',
+        ]);
+    }
+
     /**
      * @return array<string, mixed>
      */

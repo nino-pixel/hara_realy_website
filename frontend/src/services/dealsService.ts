@@ -11,11 +11,25 @@ import {
   getTransactionsByClientId,
   addTransaction,
   updateTransaction,
+  deleteTransaction,
   type DealPaymentEntry,
   type DealStatusHistoryEntry,
 } from '../data/clientsData'
 import { getPropertyStore } from '../data/properties'
 import { logActivity } from '../data/activityLog'
+import { apiDelete } from './api'
+
+export function deleteDealFromApi(id: string): Promise<void> {
+  // Mock IDs (c177..., t177...) are local only. Skip API call to avoid 404.
+  if (id.startsWith('t') || id.startsWith('temp-')) {
+    return Promise.resolve()
+  }
+  return apiDelete(`/deals/${encodeURIComponent(id)}`)
+}
+
+export function deleteDealFromLocal(clientId: string, transactionId: string): void {
+  deleteTransaction(clientId, transactionId)
+}
 
 /**
  * Deals service — wraps the in-memory deals + related client/property data.

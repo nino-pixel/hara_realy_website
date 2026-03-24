@@ -68,4 +68,18 @@ class DealController extends Controller
 
         return array_merge($extra, $base);
     }
+
+    public function destroy(string $id): JsonResponse
+    {
+        $d = Deal::query()->find($id);
+        if (! $d) {
+            return ApiResponse::failure('Not found.', 404);
+        }
+
+        $d->delete();
+
+        return ApiResponse::success([
+            'message' => 'Deal archived successfully.',
+        ]);
+    }
 }

@@ -17,6 +17,7 @@ import {
   markInquiryAsContacted,
   saveInquiryStore,
   updateInquiryInApi,
+  deleteInquiryFromApi,
 } from '../../services/inquiriesService'
 import { computeNextFollowUpDateFromTimeline, getFollowUpUiKind } from '../../utils/inquiryFollowUp'
 import { fetchProperties } from '../../services/propertiesService'
@@ -48,6 +49,9 @@ export default function AdminInquiries() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showAddLead, setShowAddLead] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [archiveModalInquiry, setArchiveModalInquiry] = useState<InquiryRecord | null>(null)
+  const [archiveReason, setArchiveReason] = useState('')
+  const [archiveError, setArchiveError] = useState('')
   const properties = fetchProperties().filter((p) => !p.archived)
 
   useEffect(() => {
@@ -273,42 +277,52 @@ export default function AdminInquiries() {
     }
   }
 
-  const handleMarkAsLost = async (lead: InquiryRecord) => {
-    const updatedRow: InquiryRecord = { ...lead, status: 'lost' }
-    updateInquiries((prev) => prev.map((row) => (row.id === lead.id ? { ...row, status: 'lost' } : row)))
+  const handleArchiveInquiry = (lead: InquiryRecord) => {
+    setArchiveModalInquiry(lead)
+    setArchiveReason('')
+    setArchiveError('')
+  }
+
+  const confirmArchiveInquiry = async () => {
+    if (!archiveModalInquiry) return
+    const reason = archiveReason.trim()
+    if (!reason) {
+      setArchiveError('Please provide a reason for archiving.')
+      return
+    }
+
     try {
-      const saved = await updateInquiryInApi(updatedRow)
-      updateInquiries((prev) => prev.map((row) => (row.id === lead.id ? saved : row)))
-    } catch {
-      updateInquiries((prev) => prev.map((row) => (row.id === lead.id ? lead : row)))
+      await deleteInquiryFromApi(archiveModalInquiry.id)
+      updateInquiries((prev) => prev.filter((row) => row.id !== archiveModalInquiry.id))
+      
+      logActivity({
+        actor,
+        action: 'archived',
+        entityType: 'inquiry',
+        entityId: archiveModalInquiry.id,
+        entityLabel: archiveModalInquiry.name,
+        details: `Archived inquiry from ${archiveModalInquiry.name} — Reason: ${reason}`,
+      })
+
       Swal.fire({
-        icon: 'error',
-        title: 'Could not save status',
-        text: 'Reverted locally. Check connection or sign in again.',
+        icon: 'success',
+        title: 'Inquiry archived',
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
-        timer: 3500,
+        timer: 2000,
+        timerProgressBar: true,
       })
-      return
+      setArchiveModalInquiry(null)
+      setArchiveReason('')
+      setArchiveError('')
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Archive failed',
+        text: err instanceof Error ? err.message : 'Could not archive inquiry.',
+      })
     }
-    logActivity({
-      actor,
-      action: 'status_changed',
-      entityType: 'inquiry',
-      entityId: lead.id,
-      entityLabel: lead.name,
-      details: `Status changed: ${INQUIRY_STATUS_LABELS[lead.status]} -> ${INQUIRY_STATUS_LABELS.lost}`,
-    })
-    Swal.fire({
-      icon: 'success',
-      title: 'Status updated',
-      toast: true,
-      position: 'top-end',
-      showConfirmButton: false,
-      timer: 2000,
-      timerProgressBar: true,
-    })
   }
 
   const handleAddLead = (payload: {
@@ -643,11 +657,10 @@ export default function AdminInquiries() {
                   <button
                     type="button"
                     className="btn-icon-btn btn-icon-btn--danger"
-                    onClick={() => handleMarkAsLost(i)}
-                    disabled={i.status === 'lost'}
-                    data-tooltip="Mark as lost — closes this lead as lost (stays in history; not deleted)."
-                    title="Mark as lost — close lead without deleting"
-                    aria-label="Mark lead as lost"
+                    onClick={() => handleArchiveInquiry(i)}
+                    data-tooltip="Archive inquiry — moves this inquiry to archives (soft delete)."
+                    title="Archive inquiry"
+                    aria-label="Archive lead"
                   >
                     <HiOutlineTrash />
                   </button>
@@ -666,6 +679,42 @@ export default function AdminInquiries() {
           onClose={() => setShowAddLead(false)}
           onSaveCreate={handleAddLead}
         />
+      )}
+
+      {archiveModalInquiry && (
+        <div className="admin-modal-overlay" onClick={() => setArchiveModalInquiry(null)} role="dialog" aria-modal="true" aria-labelledby="archive-modal-title">
+          <div className="admin-modal archive-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h2 id="archive-modal-title">Archive inquiry</h2>
+              <button type="button" className="admin-modal-close" onClick={() => setArchiveModalInquiry(null)} aria-label="Close">&times;</button>
+            </div>
+            <div className="admin-modal-body">
+              <div className="archive-warning">
+                <p className="archive-warning-title">⚠️ Confirmation</p>
+                <p>You are about to archive the inquiry from <strong>{archiveModalInquiry.name}</strong>.</p>
+              </div>
+              <div className="admin-form-row">
+                <label htmlFor="archive-reason">Reason for archiving <span className="required">*</span></label>
+                <textarea
+                  id="archive-reason"
+                  className="admin-input"
+                  value={archiveReason}
+                  onChange={(e) => { setArchiveReason(e.target.value); setArchiveError(''); }}
+                  placeholder="e.g. Lead was duplicate, lost contact, or spam"
+                  rows={3}
+                  required
+                />
+              </div>
+              {archiveError && <p className="form-error">{archiveError}</p>}
+              <div className="archive-actions">
+                <button type="button" className="btn btn-primary" onClick={confirmArchiveInquiry}>
+                  Archive inquiry
+                </button>
+                <button type="button" className="btn btn-outline" onClick={() => setArchiveModalInquiry(null)}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
@@ -707,31 +756,51 @@ function LeadFormSidebar({
   const [priority, setPriority] = useState<LeadPriority>('medium')
   const [lastContactedAt, setLastContactedAt] = useState('')
   const [nextFollowUpAt, setNextFollowUpAt] = useState('')
-  const [formError, setFormError] = useState('')
 
   const handleSave = () => {
     if (!name.trim() || !email.trim() || !phone.trim()) {
-      setFormError('Name, email, and phone are required.')
+      Swal.fire({ icon: 'warning', title: 'Required Fields', text: 'Name, email, and phone are required.' })
       return
     }
     const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRe.test(email.trim())) {
-      setFormError('Invalid email format.')
+      Swal.fire({ icon: 'error', title: 'Invalid Email', text: 'Please enter a valid email address.' })
       return
     }
-    const phoneRe = /^(\+?\d[\d\s-]{8,14})$/
-    if (!phoneRe.test(phone.trim())) {
-      setFormError('Invalid phone format.')
+
+    const allLeads = fetchInquiries()
+    const emailDuplicate = allLeads.find((l) => l.email.toLowerCase() === email.trim().toLowerCase())
+    if (emailDuplicate) {
+      Swal.fire({ 
+        icon: 'error', 
+        title: 'Lead Already Exists', 
+        html: `The email <strong>${email}</strong> is already used by <strong>${emailDuplicate.name}</strong>.` 
+      })
       return
     }
-    setFormError('')
+
+    const phoneDigits = phone.trim().replace(/[\s-]/g, '')
+    if (!phoneDigits || phoneDigits.length < 8) {
+      Swal.fire({ icon: 'warning', title: 'Invalid Phone', text: 'Please enter a valid phone number.' })
+      return
+    }
+
+    const phoneDuplicate = allLeads.find((l) => l.phone.replace(/[\s-]/g, '') === phoneDigits)
+    if (phoneDuplicate) {
+      Swal.fire({ 
+        icon: 'error', 
+        title: 'Phone Already Used', 
+        html: `The phone number <strong>${phone}</strong> is already associated with <strong>${phoneDuplicate.name}</strong>.` 
+      })
+      return
+    }
 
     const selectedProperty = properties.find((p) => p.id === propertyId)
     const resolvedPropertyTitle = selectedProperty?.title ?? propertyTitle
     onSaveCreate({
       name,
-      email,
-      phone,
+      email: email.trim(),
+      phone: phone.trim(),
       propertyId: propertyId || null,
       propertyTitle: resolvedPropertyTitle,
       message,
@@ -751,7 +820,6 @@ function LeadFormSidebar({
           <button type="button" className="deal-sidebar-close" onClick={onClose} aria-label="Close">×</button>
         </div>
         <div className="deal-sidebar-body">
-          {formError && <p className="form-error">{formError}</p>}
           <div className="admin-form-row">
             <label>Name *</label>
             <input className="admin-input" value={name} onChange={(e) => setName(e.target.value)} />

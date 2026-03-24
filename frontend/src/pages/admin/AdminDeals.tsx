@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { HiOutlineEye, HiOutlinePencil } from 'react-icons/hi'
+import { HiOutlineEye, HiOutlinePencil, HiOutlineArchive } from 'react-icons/hi'
 import Swal from 'sweetalert2'
 import FormActions from '../../components/FormActions'
 import StatusBadge from '../../components/StatusBadge'
@@ -19,6 +19,8 @@ import {
   type DealStatusHistoryEntry,
   updateDealTransaction,
   createDealTransaction,
+  deleteDealFromApi,
+  deleteDealFromLocal,
 } from '../../services/dealsService'
 import './admin-common.css'
 import './Deals.css'
@@ -104,6 +106,9 @@ export default function AdminDeals() {
   const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false)
   const [cancelReason, setCancelReason] = useState('')
   const [cancelReasonError, setCancelReasonError] = useState('')
+  const [archiveModalDeal, setArchiveModalDeal] = useState<Deal | null>(null)
+  const [archiveReason, setArchiveReason] = useState('')
+  const [archiveError, setArchiveError] = useState('')
   const [form, setForm] = useState({
     clientId: '',
     clientName: '',
@@ -157,7 +162,7 @@ export default function AdminDeals() {
   const clientFromUrl = clientIdFromUrl ? clients.find((c) => c.id === clientIdFromUrl) : null
 
   const filtered = useMemo(() => {
-    let list = fetchDeals()
+    let list = [...deals]
 
     if (clientIdFromUrl) {
       list = list.filter((d) => d.clientId === clientIdFromUrl)
@@ -296,6 +301,46 @@ export default function AdminDeals() {
       return
     }
     applyDealUpdate()
+  }
+
+  const handleArchiveDeal = (d: Deal) => {
+    setArchiveModalDeal(d)
+    setArchiveReason('')
+    setArchiveError('')
+  }
+
+  const confirmArchiveDeal = async () => {
+    if (!archiveModalDeal) return
+    const reason = archiveReason.trim()
+    if (!reason) {
+      setArchiveError('Please provide a reason for archiving.')
+      return
+    }
+
+    try {
+      await deleteDealFromApi(archiveModalDeal.id)
+      deleteDealFromLocal(archiveModalDeal._clientId, archiveModalDeal.id)
+      setDeals(prev => prev.filter(x => x.id !== archiveModalDeal.id))
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Deal archived',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      })
+      setArchiveModalDeal(null)
+      setArchiveReason('')
+      setArchiveError('')
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Archive failed',
+        text: err instanceof Error ? err.message : 'Could not archive deal.',
+      })
+    }
   }
 
   const confirmCancelDeal = () => {
@@ -481,6 +526,16 @@ export default function AdminDeals() {
                     onClick={() => openEdit(d)}
                   >
                     <HiOutlinePencil />
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-icon-btn btn-icon-btn--danger"
+                    data-tooltip="Archive deal — hides this deal and moves it to the Archives hub (soft delete)."
+                    title="Archive deal"
+                    aria-label="Archive this deal"
+                    onClick={() => handleArchiveDeal(d)}
+                  >
+                    <HiOutlineArchive />
                   </button>
                 </td>
               </tr>
@@ -731,6 +786,63 @@ export default function AdminDeals() {
                   onClick={() => setShowCancelConfirmModal(false)}
                 >
                   Back
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Archive deal modal — same pattern as client archive */}
+      {archiveModalDeal && (
+        <div
+          className="admin-modal-overlay"
+          onClick={() => setArchiveModalDeal(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="archive-deal-modal-title"
+        >
+          <div className="admin-modal archive-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h2 id="archive-deal-modal-title">Archive deal</h2>
+              <button
+                type="button"
+                className="admin-modal-close"
+                onClick={() => setArchiveModalDeal(null)}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="admin-modal-body">
+              <div className="archive-warning">
+                <p className="archive-warning-title">⚠️ Confirmation</p>
+                <p>
+                  You are about to archive deal <strong>{archiveModalDeal.dealId}</strong>.
+                </p>
+              </div>
+              <div className="admin-form-row">
+                <label htmlFor="archive-reason">Reason for archiving <span className="required">*</span></label>
+                <textarea
+                  id="archive-reason"
+                  className="admin-input"
+                  value={archiveReason}
+                  onChange={(e) => { setArchiveReason(e.target.value); setArchiveError(''); }}
+                  placeholder="e.g. Transaction completed, client withdrew, listing expired"
+                  rows={3}
+                  required
+                />
+              </div>
+              {archiveError && <p className="form-error">{archiveError}</p>}
+              <div className="archive-actions">
+                <button type="button" className="btn btn-primary" onClick={confirmArchiveDeal}>
+                  Archive deal
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => setArchiveModalDeal(null)}
+                >
+                  Cancel
                 </button>
               </div>
             </div>

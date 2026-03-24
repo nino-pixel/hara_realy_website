@@ -1,7 +1,21 @@
 import { AnimatePresence } from 'framer-motion'
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { HiOutlineChevronLeft, HiOutlineMenu, HiMoon, HiSun, HiOutlineSparkles } from 'react-icons/hi'
+import { 
+  HiOutlineChevronLeft, 
+  HiOutlineMenu, 
+  HiMoon, 
+  HiSun,
+  HiOutlineViewGrid,
+  HiOutlineUsers,
+  HiOutlineHome,
+  HiOutlineShoppingBag,
+  HiOutlineChatAlt2,
+  HiOutlineClipboardList,
+  HiOutlineDocumentReport,
+  HiOutlineArchive,
+  HiOutlineUserGroup
+} from 'react-icons/hi'
 import { useAdminAuth } from '../../context/AdminAuth'
 import { useDarkMode } from '../../hooks/useDarkMode'
 import Swal from 'sweetalert2'
@@ -24,15 +38,28 @@ export default function AdminLayout() {
 
   const handleLogout = () => {
     Swal.fire({
-      title: 'Logout?',
-      text: 'Are you sure you want to end your session?',
-      icon: 'question',
+      title: 'Log out of CHara?',
+      text: 'Are you sure you want to end your current session?',
+      icon: 'warning',
+      iconHtml: '<div class="logout-swal-icon">🚪</div>',
       showCancelButton: true,
-      confirmButtonText: 'Yes, logout',
-      cancelButtonText: 'Stay logged in',
-      confirmButtonColor: 'var(--color-accent)',
+      confirmButtonText: 'Yes, Log Out',
+      cancelButtonText: 'Keep Session',
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: 'var(--color-bg-alt)',
       background: 'var(--color-surface)',
       color: 'var(--color-text)',
+      customClass: {
+        popup: 'logout-confirmation-modal',
+        confirmButton: 'swal-btn-danger',
+        cancelButton: 'swal-btn-secondary'
+      },
+      showClass: {
+        popup: 'animate__animated animate__fadeInDown animate__faster'
+      },
+      hideClass: {
+        popup: 'animate__animated animate__fadeOutUp animate__faster'
+      }
     }).then((result) => {
       if (result.isConfirmed) {
         void logout().then(() => navigate('/admin/login'))
@@ -109,17 +136,33 @@ export default function AdminLayout() {
           <span className="admin-sidebar-role">{user ? 'Admin' : 'Guest'}</span>
         </div>
         <nav className="admin-sidebar-nav">
-          <Link to="/admin/dashboard">Dashboard</Link>
-          <Link to="/admin/assistant" className="admin-sidebar-nav-ai">
-            <HiOutlineSparkles className="nav-ai-icon" /> AI Assistant
+          <Link to="/admin/dashboard">
+            <HiOutlineViewGrid className="nav-icon" /> Dashboard
           </Link>
-          <Link to="/admin/clients">Clients</Link>
-          <Link to="/admin/properties">Properties</Link>
-          <Link to="/admin/deals">Deals</Link>
-          <Link to="/admin/inquiries">Leads & Inquiries</Link>
-          <Link to="/admin/activity">Activity Log</Link>
-          <Link to="/admin/reports">Reports</Link>
-          <Link to="/admin/users">Admin users</Link>
+          <Link to="/admin/clients">
+            <HiOutlineUsers className="nav-icon" /> Clients
+          </Link>
+          <Link to="/admin/properties">
+            <HiOutlineHome className="nav-icon" /> Properties
+          </Link>
+          <Link to="/admin/deals">
+            <HiOutlineShoppingBag className="nav-icon" /> Deals
+          </Link>
+          <Link to="/admin/inquiries">
+            <HiOutlineChatAlt2 className="nav-icon" /> Leads & Inquiries
+          </Link>
+          <Link to="/admin/activity">
+            <HiOutlineClipboardList className="nav-icon" /> Activity Log
+          </Link>
+          <Link to="/admin/reports">
+            <HiOutlineDocumentReport className="nav-icon" /> Reports
+          </Link>
+          <Link to="/admin/archives">
+            <HiOutlineArchive className="nav-icon" /> Archives
+          </Link>
+          <Link to="/admin/users">
+            <HiOutlineUserGroup className="nav-icon" /> Admin users
+          </Link>
         </nav>
         <div className="admin-sidebar-footer">
           <span className="admin-sidebar-user">{user?.name ?? '—'}</span>

@@ -142,6 +142,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Title</label>
               <input
+                className="admin-input"
                 value={form.title ?? ''}
                 onChange={(e) => update('title', e.target.value)}
                 placeholder="Listing name"
@@ -167,6 +168,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Developer / Subdivision</label>
               <input
+                className="admin-input"
                 value={form.developer ?? ''}
                 onChange={(e) => update('developer', e.target.value)}
                 placeholder="e.g. Ayala Land"
@@ -175,6 +177,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Year Built (optional)</label>
               <input
+                className="admin-input"
                 type="text"
                 value={form.yearBuilt ?? ''}
                 onChange={(e) => update('yearBuilt', e.target.value)}
@@ -200,6 +203,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Address</label>
               <input
+                className="admin-input"
                 value={form.address ?? ''}
                 onChange={(e) => update('address', e.target.value)}
                 placeholder="Street, building"
@@ -209,6 +213,7 @@ export default function PropertyFormModal({
               <div className="admin-form-row">
                 <label>City</label>
                 <input
+                  className="admin-input"
                   value={form.city ?? ''}
                   onChange={(e) => update('city', e.target.value)}
                   placeholder="City"
@@ -217,6 +222,7 @@ export default function PropertyFormModal({
               <div className="admin-form-row">
                 <label>Province</label>
                 <input
+                  className="admin-input"
                   value={form.province ?? ''}
                   onChange={(e) => update('province', e.target.value)}
                   placeholder="Province"
@@ -226,6 +232,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Location (display line)</label>
               <input
+                className="admin-input"
                 value={form.location ?? ''}
                 onChange={(e) => update('location', e.target.value)}
                 placeholder="e.g. Angeles City, Pampanga"
@@ -238,6 +245,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Price</label>
               <input
+                className="admin-input"
                 inputMode="numeric"
                 autoComplete="off"
                 value={formatPesoInputFromRaw(String(form.price ?? ''))}
@@ -263,6 +271,7 @@ export default function PropertyFormModal({
               <div className="admin-form-row">
                 <label>Downpayment</label>
                 <input
+                  className="admin-input"
                   inputMode="numeric"
                   autoComplete="off"
                   value={formatPesoInputFromRaw(String(form.downpayment ?? ''))}
@@ -273,6 +282,7 @@ export default function PropertyFormModal({
               <div className="admin-form-row">
                 <label>Monthly Est.</label>
                 <input
+                  className="admin-input"
                   value={form.monthlyEst ?? ''}
                   onChange={(e) => update('monthlyEst', e.target.value)}
                   placeholder="₱0"
@@ -323,6 +333,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Cover Photo (URL)</label>
               <input
+                className="admin-input"
                 value={coverFile ? '' : form.image ?? ''}
                 onChange={(e) => {
                   setCoverFile(null)
@@ -554,6 +565,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Virtual Tour (link)</label>
               <input
+                className="admin-input"
                 value={form.virtualTourUrl ?? ''}
                 onChange={(e) => update('virtualTourUrl', e.target.value)}
                 placeholder="https://..."
@@ -580,6 +592,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Availability Date</label>
               <input
+                className="admin-input"
                 type="date"
                 value={form.availabilityDate ?? ''}
                 onChange={(e) => update('availabilityDate', e.target.value)}
@@ -589,6 +602,7 @@ export default function PropertyFormModal({
               <div className="admin-form-row">
                 <label>Promo price</label>
                 <input
+                  className="admin-input"
                   inputMode="numeric"
                   autoComplete="off"
                   value={formatPesoInputFromRaw(String(form.promoPrice ?? ''))}
@@ -599,6 +613,7 @@ export default function PropertyFormModal({
               <div className="admin-form-row">
                 <label>Promo until</label>
                 <input
+                  className="admin-input"
                   type="date"
                   value={form.promoUntil ?? ''}
                   onChange={(e) => update('promoUntil', e.target.value)}
@@ -668,6 +683,7 @@ export default function PropertyFormModal({
               <div className="admin-form-row">
                 <label>Floor Area</label>
                 <input
+                  className="admin-input"
                   value={form.floorArea ?? form.area ?? ''}
                   onChange={(e) => update('floorArea', e.target.value)}
                   placeholder="e.g. 95 sqm"
@@ -676,6 +692,7 @@ export default function PropertyFormModal({
               <div className="admin-form-row">
                 <label>Lot Area</label>
                 <input
+                  className="admin-input"
                   value={form.lotArea ?? ''}
                   onChange={(e) => update('lotArea', e.target.value)}
                   placeholder="e.g. 120 sqm"
@@ -686,6 +703,7 @@ export default function PropertyFormModal({
               <div className="admin-form-row">
                 <label>Bedrooms</label>
                 <input
+                  className="admin-input"
                   type="number"
                   min={0}
                   value={form.beds ?? 0}
@@ -695,6 +713,7 @@ export default function PropertyFormModal({
               <div className="admin-form-row">
                 <label>Bathrooms</label>
                 <input
+                  className="admin-input"
                   type="number"
                   min={0}
                   value={form.baths ?? 0}
@@ -704,6 +723,7 @@ export default function PropertyFormModal({
               <div className="admin-form-row">
                 <label>Parking</label>
                 <input
+                  className="admin-input"
                   type="number"
                   min={0}
                   value={form.parking ?? 0}
@@ -714,6 +734,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Area (display)</label>
               <input
+                className="admin-input"
                 value={form.area ?? ''}
                 onChange={(e) => update('area', e.target.value)}
                 placeholder="e.g. 95 sqm"
@@ -756,6 +777,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label htmlFor="property-fb-link">Facebook Post Link</label>
               <input
+                className="admin-input"
                 id="property-fb-link"
                 type="url"
                 value={typeof form.showOnFacebook === 'string' ? form.showOnFacebook : ''}
@@ -801,6 +823,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Title number</label>
               <input
+                className="admin-input"
                 value={form.titleNumber ?? ''}
                 onChange={(e) => update('titleNumber', e.target.value)}
                 placeholder="e.g. 12345"
@@ -809,6 +832,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Registered owner</label>
               <input
+                className="admin-input"
                 value={form.registeredOwner ?? ''}
                 onChange={(e) => update('registeredOwner', e.target.value)}
                 placeholder="As shown on title"
@@ -817,6 +841,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Tax declaration no.</label>
               <input
+                className="admin-input"
                 value={form.taxDeclarationNo ?? ''}
                 onChange={(e) => update('taxDeclarationNo', e.target.value)}
                 placeholder="Optional"
@@ -825,6 +850,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Last transfer date</label>
               <input
+                className="admin-input"
                 type="date"
                 value={form.lastTransferDate ?? ''}
                 onChange={(e) => update('lastTransferDate', e.target.value)}
@@ -833,6 +859,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>With encumbrance?</label>
               <select
+                className="admin-input"
                 value={form.withEncumbrance === true ? 'yes' : form.withEncumbrance === false ? 'no' : ''}
                 onChange={(e) => update('withEncumbrance', e.target.value === 'yes')}
               >
@@ -844,6 +871,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Remarks (legal)</label>
               <input
+                className="admin-input"
                 value={form.legalStatus ?? ''}
                 onChange={(e) => update('legalStatus', e.target.value)}
                 placeholder="e.g. Clean title, other notes"
@@ -984,6 +1012,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Internal notes</label>
               <textarea
+                className="admin-input"
                 value={form.internalNotes ?? ''}
                 onChange={(e) => update('internalNotes', e.target.value)}
                 rows={2}
@@ -993,6 +1022,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Owner instructions</label>
               <textarea
+                className="admin-input"
                 value={form.ownerInstructions ?? ''}
                 onChange={(e) => update('ownerInstructions', e.target.value)}
                 rows={2}

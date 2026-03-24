@@ -16,7 +16,7 @@ import {
   type ClientSource,
   type LastActivityType,
 } from '../../services/clientsService'
-import { persistClientToApi } from '../../services/clientsApi'
+import { persistClientToApi, deleteClientFromApi } from '../../services/clientsApi'
 import {
   BULACAN_PROVINCE,
   BULACAN_MUNICIPALITIES,
@@ -66,7 +66,6 @@ export default function AdminClients() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [showForm, setShowForm] = useState(false)
   const [editingClient, setEditingClient] = useState<ClientRecord | null>(null)
-  const [formError, setFormError] = useState('')
   const [addMenuOpen, setAddMenuOpen] = useState(false)
   const addMenuRef = useRef<HTMLDivElement>(null)
   const [showBulkUpload, setShowBulkUpload] = useState(false)
@@ -244,11 +243,13 @@ export default function AdminClients() {
       return
     }
     const toArchive = fetchClients().filter((c) => selectedIds.has(c.id))
-    const now = new Date().toISOString()
+    
+    // Asynchronously call API for each
+    Promise.all(toArchive.map(c => deleteClientFromApi(c.id)))
+      .catch(err => console.error('Bulk archive failed:', err))
+
     const next = saveClientStore((prev) =>
-      prev.map((c) =>
-      selectedIds.has(c.id) ? { ...c, archived: true, archivedAt: now, archiveReason: reason } : c
-      )
+      prev.filter((c) => !selectedIds.has(c.id))
     )
     setClients(next)
     setSelectedIds(new Set())
@@ -309,19 +310,16 @@ export default function AdminClients() {
   const openAdd = () => {
     setEditingClient(null)
     setShowForm(true)
-    setFormError('')
   }
 
   const openEdit = (c: ClientRecord) => {
     setEditingClient(c)
     setShowForm(true)
-    setFormError('')
   }
 
   const closeForm = () => {
     setShowForm(false)
     setEditingClient(null)
-    setFormError('')
   }
 
   const deleteClient = (c: ClientRecord) => {
@@ -345,13 +343,13 @@ export default function AdminClients() {
       setArchiveError('Please provide a reason for archiving.')
       return
     }
-    const now = new Date().toISOString()
+    // Call API (asynchronous)
+    deleteClientFromApi(archiveModalClient.id).catch(err => {
+      console.error('Delete client failed:', err)
+    })
+
     const next = saveClientStore((prev) =>
-      prev.map((x) =>
-      x.id === archiveModalClient.id
-        ? { ...x, archived: true, archivedAt: now, archiveReason: reason }
-        : x
-      )
+      prev.filter((x) => x.id !== archiveModalClient.id)
     )
     setClients(next)
     setArchiveModalClient(null)
@@ -949,8 +947,6 @@ export default function AdminClients() {
               })
             }, 0)
           }}
-          setFormError={setFormError}
-          formError={formError}
         />
       )}
     </div>
@@ -961,14 +957,10 @@ function ClientFormSidebar({
   client,
   onClose,
   onSave,
-  formError,
-  setFormError,
 }: {
   client: ClientRecord | null
   onClose: () => void
   onSave: (c: ClientRecord) => void
-  formError: string
-  setFormError: (s: string) => void
 }) {
   const isEdit = !!client
   const [name, setName] = useState(client?.name ?? '')
@@ -993,34 +985,46 @@ function ClientFormSidebar({
 
   const validate = (): boolean => {
     if (!name.trim()) {
-      setFormError('Full name is required.')
+      Swal.fire({ icon: 'warning', title: 'Name Required', text: 'Full name is required.' })
       return false
     }
     const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRe.test(email)) {
-      setFormError('Invalid email address.')
+      Swal.fire({ icon: 'error', title: 'Invalid Email', text: 'Please enter a valid email address.' })
       return false
     }
-    const allClients = fetchClients()
-    const duplicate = allClients.some((c) => c.email.toLowerCase() === email.toLowerCase() && c.id !== client?.id)
-    if (duplicate) {
-      setFormError('Email already exists.')
+    const allClients = getClientStore()
+    const emailDuplicate = allClients.find((c) => c.email.toLowerCase() === email.toLowerCase() && c.id !== client?.id)
+    if (emailDuplicate) {
+      Swal.fire({ 
+        icon: 'error', 
+        title: 'Email Already Used', 
+        html: `The email <strong>${email}</strong> is already used by <strong>${emailDuplicate.name}</strong>.` 
+      })
       return false
     }
     const phoneDigits = phone.replace(/\s/g, '')
+    const phoneDuplicate = allClients.find((c) => c.phone.replace(/\s/g, '') === phoneDigits && c.id !== client?.id)
+    if (phoneDuplicate) {
+      Swal.fire({ 
+        icon: 'error', 
+        title: 'Phone Already Used', 
+        html: `The phone number <strong>${phone}</strong> is already used by <strong>${phoneDuplicate.name}</strong>.` 
+      })
+      return false
+    }
     if (!isValidPhMobile09(phoneDigits)) {
-      setFormError('Phone must be 11 digits starting with 09 (e.g. 09171234567).')
+      Swal.fire({ icon: 'warning', title: 'Invalid Phone', text: 'Phone must be 11 digits starting with 09.' })
       return false
     }
     if (!municipality.trim()) {
-      setFormError('Municipality / city is required.')
+      Swal.fire({ icon: 'warning', title: 'Location Required', text: 'Municipality / city is required.' })
       return false
     }
     if (!barangay.trim()) {
-      setFormError('Barangay is required.')
+      Swal.fire({ icon: 'warning', title: 'Location Required', text: 'Barangay is required.' })
       return false
     }
-    setFormError('')
     return true
   }
 
@@ -1080,7 +1084,11 @@ function ClientFormSidebar({
       const saved = await persistClientToApi(draft)
       onSave(saved)
     } catch (e) {
-      setFormError(e instanceof Error ? e.message : 'Failed to save client.')
+      Swal.fire({ 
+        icon: 'error', 
+        title: 'Save Failed', 
+        text: e instanceof Error ? e.message : 'Failed to save client.' 
+      })
     } finally {
       setSaving(false)
     }
@@ -1094,7 +1102,6 @@ function ClientFormSidebar({
           <button type="button" className="client-sidebar-close" onClick={onClose} aria-label="Close">×</button>
         </div>
         <div className="client-sidebar-body">
-          {formError && <p className="form-error">{formError}</p>}
           <div className="admin-form-row">
             <label>Full Name *</label>
             <input

@@ -25,18 +25,23 @@ import AdminUsers from './pages/admin/AdminUsers'
 import Inquiries from './pages/admin/Inquiries'
 import ActivityLog from './pages/admin/ActivityLog'
 import Reports from './pages/admin/Reports'
-import AiAssistant from './pages/admin/AiAssistant'
+import AdminArchives from './pages/admin/AdminArchives'
 
 export default function App() {
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      const btn = (e.target as HTMLElement).closest('.btn') as HTMLElement
-      if (btn) {
-        const rect = btn.getBoundingClientRect()
+      const target = e.target as HTMLElement
+      const interactive = target.closest('.btn, .property-spec-card') as HTMLElement
+      if (interactive) {
+        const rect = interactive.getBoundingClientRect()
         const x = e.clientX - rect.left
         const y = e.clientY - rect.top
-        btn.style.setProperty('--btn-mouse-x', `${x}px`)
-        btn.style.setProperty('--btn-mouse-y', `${y}px`)
+        interactive.style.setProperty('--mouse-x', `${x}px`)
+        interactive.style.setProperty('--mouse-y', `${y}px`)
+        
+        /* Legacy support for old --btn-mouse-x names if needed, but we'll update CSS too */
+        interactive.style.setProperty('--btn-mouse-x', `${x}px`)
+        interactive.style.setProperty('--btn-mouse-y', `${y}px`)
       }
     }
     window.addEventListener('mousemove', handleMouseMove)
@@ -72,8 +77,8 @@ export default function App() {
             <Route path="inquiries" element={<Inquiries />} />
             <Route path="activity" element={<ActivityLog />} />
             <Route path="reports" element={<Reports />} />
+            <Route path="archives" element={<AdminArchives />} />
             <Route path="users" element={<AdminUsers />} />
-            <Route path="assistant" element={<AiAssistant />} />
           </Route>
         </Route>
       </Routes>

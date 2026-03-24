@@ -3,7 +3,7 @@
  */
 import { BULACAN_PROVINCE, formatBulacanAddressLine } from '../data/bulacanAddress'
 import type { ClientRecord, ClientSource, ClientStatus, LastActivityType } from '../data/clientsData'
-import { apiPost } from './api'
+import { apiPost, apiDelete } from './api'
 
 type ApiClientResponse = { success: boolean; data: Record<string, unknown> }
 
@@ -98,4 +98,12 @@ export async function persistClientToApi(client: ClientRecord): Promise<ClientRe
     archivedAt: client.archivedAt,
     archiveReason: client.archiveReason,
   })
+}
+
+export async function deleteClientFromApi(id: string): Promise<void> {
+  // Mock IDs (c177...) are local only. Skip API call to avoid 404.
+  if (id.startsWith('c')) {
+    return
+  }
+  await apiDelete(`/clients/${id}`)
 }

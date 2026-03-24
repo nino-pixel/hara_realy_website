@@ -714,7 +714,8 @@ html.home-scroll-snap footer.footer {
   z-index: 9999;
   background: radial-gradient(
     circle 800px at var(--mouse-x) var(--mouse-y),
-    rgba(193, 155, 108, 0.08) 0%,
+    rgba(193, 155, 108, 0.15) 0%,
+    rgba(193, 155, 108, 0.05) 30%,
     transparent 80%
   );
   mix-blend-mode: color-dodge;

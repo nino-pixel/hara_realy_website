@@ -111,4 +111,18 @@ class ClientController extends Controller
 
         return array_merge($extra, $base);
     }
+
+    public function destroy(string $id): JsonResponse
+    {
+        $c = Client::query()->find($id);
+        if (! $c) {
+            return ApiResponse::failure('Not found.', 404);
+        }
+
+        $c->delete();
+
+        return ApiResponse::success([
+            'message' => 'Client archived successfully.',
+        ]);
+    }
 }

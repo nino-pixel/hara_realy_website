@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ArchivesController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\DealController;
@@ -44,12 +45,22 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
 
     Route::post('/properties', [PropertyController::class, 'store']);
+    Route::delete('/properties/{id}', [PropertyController::class, 'destroy']);
 
     Route::get('/inquiries', [InquiryController::class, 'index']);
     Route::put('/inquiries/{id}', [InquiryController::class, 'update']);
+    Route::delete('/inquiries/{id}', [InquiryController::class, 'destroy']);
 
     Route::post('/clients', [ClientController::class, 'store']);
+    Route::delete('/clients/{id}', [ClientController::class, 'destroy']);
+
     Route::post('/deals', [DealController::class, 'store']);
+    Route::delete('/deals/{id}', [DealController::class, 'destroy']);
 
     Route::post('/sync/from-local', SyncController::class);
+
+    // Archives
+    Route::get('/archives', [ArchivesController::class, 'index']);
+    Route::post('/archives/restore', [ArchivesController::class, 'restore']);
+    Route::delete('/archives', [ArchivesController::class, 'destroy']);
 });

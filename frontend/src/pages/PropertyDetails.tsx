@@ -1,11 +1,24 @@
 import { useMemo, useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { HiOutlineChevronLeft, HiOutlineChevronRight, HiOutlineX, HiOutlineZoomIn } from 'react-icons/hi'
+import { 
+  HiOutlineChevronLeft, 
+  HiOutlineChevronRight, 
+  HiOutlineX, 
+  HiOutlineZoomIn,
+  HiOutlineLocationMarker,
+  HiOutlineCalendar,
+  HiOutlineOfficeBuilding
+} from 'react-icons/hi'
+import { 
+  MdOutlineBed, 
+  MdOutlineBathtub, 
+  MdOutlineSquareFoot,
+  MdOutlineDirectionsCar 
+} from 'react-icons/md'
 import Swal from 'sweetalert2'
 import {
   fetchProperties,
-  getPropertyStatusDescription,
   isPropertyPublicListing,
   getPublicGalleryUrls,
   getPublicTitleTypeLabel,
@@ -42,6 +55,18 @@ function Fact({ label, value }: { label: string; value: React.ReactNode }) {
     <div className="property-details-fact">
       <dt>{label}</dt>
       <dd>{value}</dd>
+    </div>
+  )
+}
+
+function PropertySpecCard({ icon, value, label }: { icon: React.ReactNode; value: string | number; label: string }) {
+  return (
+    <div className="property-spec-card">
+      <div className="property-spec-content">
+        <div className="property-spec-icon">{icon}</div>
+        <div className="property-spec-value">{value}</div>
+        <div className="property-spec-label">{label}</div>
+      </div>
     </div>
   )
 }
@@ -171,7 +196,6 @@ export default function PropertyDetails() {
   }
 
   const statusLabel = PROPERTY_STATUS_LABELS[property.status]
-  const statusHint = getPropertyStatusDescription(property.status)
   const updatedAt = new Date(property.updatedAt).getTime()
   const isRecentlyUpdated = Date.now() - updatedAt < RECENT_UPDATE_MS && Number.isFinite(updatedAt)
 
@@ -195,7 +219,6 @@ export default function PropertyDetails() {
       property.paymentOptions.map((k) => PAYMENT_OPTION_LABELS[k] ?? k).join(' · ')
     : null
 
-  const showSpecs = Boolean(property.area) || property.beds > 0 || property.baths > 0
   const hasKeyFacts =
     Boolean(
       property.developer ||
@@ -346,31 +369,37 @@ export default function PropertyDetails() {
     <div className="property-details-page">
       <section className="page-hero">
         <div className="container">
-          <div className="property-details-hero-row">
-            <div>
-              <span
-                className={`property-card-status property-card-status--${property.status} property-details-status-badge`}
-              >
-                {statusLabel}
-              </span>
-              {isRecentlyUpdated && (
-                <span className="property-details-recent">Recently updated</span>
-              )}
-            </div>
+          <div className="property-details-hero-badges">
+            <span className="property-type-tag">{property.type}</span>
+            <span className={`property-status-tag property-status-tag--${property.status}`}>
+              {statusLabel}
+            </span>
+            {isRecentlyUpdated && (
+              <span className="property-details-recent">Recently updated</span>
+            )}
+          </div>
+          
+          <div className="property-details-title-row">
+            <h1 className="page-title">{property.title}</h1>
             <div className="property-details-hero-actions">
               <SavePropertyButton
                 propertyId={property.id}
                 variant="detail"
                 onToggle={showSavedListToast}
               />
-              <button type="button" className="btn btn-primary" onClick={scrollToInquiry}>
-                Inquire Now
-              </button>
             </div>
           </div>
-          <h1 className="page-title">{property.title}</h1>
-          <p className="page-subtitle">{property.location}</p>
-          <p className="property-details-status-hint">{statusHint}</p>
+          
+          <p className="property-details-location">
+            <HiOutlineLocationMarker className="loc-icon" /> {property.location}
+          </p>
+          
+          <div className="property-details-hero-lower">
+            <p className="property-details-price">{property.price}</p>
+            <button type="button" className="btn btn-primary" onClick={scrollToInquiry}>
+              Inquire Now
+            </button>
+          </div>
         </div>
       </section>
       <section className="section">
@@ -409,26 +438,54 @@ export default function PropertyDetails() {
               )}
             </div>
 
-            <div className="property-details-meta property-details-meta--lead">
-              <p className="property-details-price">{property.price}</p>
-              <p className="property-details-type-line">
-                <strong>Type:</strong> {property.type}
-              </p>
-              {showSpecs && (
-                <ul className="property-details-quick-specs">
-                  {property.area ? <li>{property.area}</li> : null}
-                  {property.beds > 0 ? <li>{property.beds} bed{property.beds === 1 ? '' : 's'}</li> : null}
-                  {property.baths > 0 ? <li>{property.baths} bath{property.baths === 1 ? '' : 's'}</li> : null}
-                </ul>
+            <div className="property-details-specs-grid">
+              {property.beds > 0 && (
+                <PropertySpecCard 
+                  icon={<MdOutlineBed />} 
+                  value={property.beds} 
+                  label="Bedrooms" 
+                />
+              )}
+              {property.baths > 0 && (
+                <PropertySpecCard 
+                  icon={<MdOutlineBathtub />} 
+                  value={property.baths} 
+                  label="Bathrooms" 
+                />
+              )}
+              {property.area && (
+                <PropertySpecCard 
+                  icon={<MdOutlineSquareFoot />} 
+                  value={property.area} 
+                  label="Area" 
+                />
+              )}
+              {property.yearBuilt && (
+                <PropertySpecCard 
+                  icon={<HiOutlineCalendar />} 
+                  value={property.yearBuilt} 
+                  label="Year Built" 
+                />
+              )}
+              {property.parking != null && property.parking > 0 && (
+                <PropertySpecCard 
+                  icon={<MdOutlineDirectionsCar />} 
+                  value={property.parking} 
+                  label="Parking" 
+                />
               )}
             </div>
 
             {property.publicDescription && (
-              <section className="property-details-block" aria-labelledby="pd-about">
-                <h2 id="pd-about" className="property-details-block-title">
-                  About this property
-                </h2>
+              <section className="property-details-block property-details-block--description" aria-labelledby="pd-about">
+                <h2 id="pd-about" className="property-details-block-title">Description</h2>
                 <p className="property-details-description">{property.publicDescription}</p>
+                {property.developer && (
+                  <div className="property-details-developer">
+                    <HiOutlineOfficeBuilding className="dev-icon" />
+                    <span>Developer: <strong>{property.developer}</strong></span>
+                  </div>
+                )}
               </section>
             )}
 
@@ -438,20 +495,8 @@ export default function PropertyDetails() {
                   Key details
                 </h2>
                 <dl className="property-details-facts">
-                  <Fact label="Developer" value={property.developer} />
-                  <Fact label="Year built" value={property.yearBuilt} />
                   <Fact label="City" value={property.city} />
                   <Fact label="Province" value={property.province} />
-                  <Fact label="Floor area" value={property.floorArea} />
-                  <Fact label="Lot area" value={property.lotArea} />
-                  <Fact
-                    label="Parking"
-                    value={
-                      property.parking != null && property.parking > 0
-                        ? `${property.parking} slot(s)`
-                        : null
-                    }
-                  />
                   <Fact
                     label="Furnished"
                     value={

@@ -393,6 +393,16 @@ export function updateTransaction(clientId: string, transactionId: string, updat
   import('./simulationSnapshot').then(({ persistSimulationSnapshot }) => persistSimulationSnapshot())
 }
 
+export function deleteTransaction(clientId: string, transactionId: string): void {
+  const list = transactionsStore[clientId] ?? []
+  transactionsStore = {
+    ...transactionsStore,
+    [clientId]: list.filter((t) => t.id !== transactionId),
+  }
+  syncClientDealsCountFromTransactions(clientId)
+  import('./simulationSnapshot').then(({ persistSimulationSnapshot }) => persistSimulationSnapshot())
+}
+
 const savedByClient: Record<string, ClientSavedProperty[]> = {
   c1: [
     { id: 'f1', propertyId: '4', propertyTitle: 'Greenfield Residence' },

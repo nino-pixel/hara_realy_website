@@ -3,7 +3,7 @@
  * Uses multipart FormData when uploading images (no base64 in JSON).
  */
 import type { Property } from '../data/properties'
-import { apiPost, apiPostFormData } from './api'
+import { apiPost, apiPostFormData, apiDelete } from './api'
 
 type ApiPropertyResponse = { success: boolean; data: Property }
 
@@ -112,4 +112,13 @@ export async function persistPropertyToApi(
     throw new Error('Invalid property response from server.')
   }
   return data as Property
+}
+
+export async function deletePropertyFromApi(id: string | number): Promise<void> {
+  const sid = String(id)
+  // Mock IDs (p177...) are local only. Skip API call to avoid 404.
+  if (sid.startsWith('p')) {
+    return
+  }
+  await apiDelete(`/properties/${encodeURIComponent(sid)}`)
 }

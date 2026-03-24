@@ -4,7 +4,7 @@ import { logActivity } from '../data/activityLog'
 import { getPropertyById, setPropertyStore } from '../data/properties'
 import { computeNextFollowUpDateFromTimeline, formatLocalDateOnly } from '../utils/inquiryFollowUp'
 import { trackEvent } from './analyticsService'
-import { apiPost, apiPut } from './api'
+import { apiPost, apiPut, apiDelete } from './api'
 
 export type { InquiryRecord }
 
@@ -247,7 +247,7 @@ export async function updateInquiryInApi(row: InquiryRecord): Promise<InquiryRec
   return res.data
 }
 
-/** Quick action: record contact and push next follow-up +2 days (local date). */
+/** Quick action: record contact, update status to 'contacted', and push next follow-up +2 days (local date). */
 export function markInquiryAsContacted(inquiryId: string) {
   const now = new Date()
   const next = new Date(now)
@@ -257,10 +257,19 @@ export function markInquiryAsContacted(inquiryId: string) {
       row.id === inquiryId
         ? {
             ...row,
+            status: 'contacted' as const,
             lastContactedAt: now.toISOString(),
             nextFollowUpAt: formatLocalDateOnly(next),
           }
         : row
     )
   )
+}
+
+export async function deleteInquiryFromApi(id: string): Promise<void> {
+  // Mock IDs (L177..., i177...) are local only. Skip API call to avoid 404.
+  if (id.startsWith('L') || id.startsWith('i')) {
+    return
+  }
+  await apiDelete(`/inquiries/${encodeURIComponent(id)}`)
 }

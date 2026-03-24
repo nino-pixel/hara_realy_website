@@ -193,7 +193,9 @@
 .property-sidebar-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 1000;
   animation: property-sidebar-fadeIn 0.25s ease;
 }
@@ -208,8 +210,11 @@
   bottom: 0;
   width: 100%;
   max-width: 480px;
-  background: var(--color-surface);
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-left: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
   display: flex;
   flex-direction: column;
   z-index: 1001;
@@ -284,22 +289,14 @@
   gap: 0.75rem;
   flex-wrap: wrap;
 }
-.property-sidebar-body .admin-form-row { margin-bottom: 1rem; }
-.property-sidebar-body .admin-form-row label { display: block; font-size: 0.9rem; font-weight: 500; margin-bottom: 0.35rem; }
-.property-sidebar-body .admin-form-row .admin-input { width: 100%; min-width: 0; }
-.property-sidebar-body .admin-form-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
-
 /* Form (modal) */
-.admin-form-row { margin-bottom: 1rem; }
-.admin-form-row label { display: block; font-size: 0.9rem; font-weight: 500; margin-bottom: 0.35rem; }
-.admin-form-row input,
-.admin-form-row select {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-size: 0.95rem;
+.property-form-section {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--color-border);
 }
+
+.property-form-section:last-of-type { border-bottom: none; }
 .admin-form-inline {
   display: flex;
   gap: 0.5rem;

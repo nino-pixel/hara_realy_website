@@ -22,7 +22,7 @@ import {
   type PropertyStatus,
   type PropertyType,
 } from '../../services/propertiesService'
-import { persistPropertyToApi, type PropertyImageUpload } from '../../services/propertiesApi'
+import { persistPropertyToApi, deletePropertyFromApi, type PropertyImageUpload } from '../../services/propertiesApi'
 import { resolveStorageUrl } from '../../utils/mediaUrl'
 import { useAdminAuth } from '../../context/AdminAuth'
 import PropertyFormModal from './PropertyFormModal'
@@ -238,16 +238,9 @@ export default function AdminProperties() {
       setArchiveError('Please provide a reason for archiving.')
       return
     }
-    const now = new Date().toISOString()
-    const merged: Property = {
-      ...archiveModalProperty,
-      archived: true,
-      archivedAt: now,
-      archiveReason: reason,
-    }
     try {
-      const saved = await persistPropertyToApi(merged)
-      const next = savePropertyStore((prev) => prev.map((p) => (p.id === saved.id ? saved : p)))
+      await deletePropertyFromApi(archiveModalProperty.id)
+      const next = savePropertyStore((prev) => prev.filter((p) => p.id !== archiveModalProperty.id))
       setProperties(next.filter((q) => !q.archived))
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Could not archive on server.'

@@ -1,8 +1,45 @@
-.activity-log-toolbar {
+.admin-search-wrapper {
+  position: relative;
+  max-width: 500px;
+  margin-bottom: 2rem;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
   align-items: center;
+}
+
+.activity-log-search {
+  width: 100%;
+  padding-right: 2.5rem;
+  height: 44px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+}
+
+.activity-log-search:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.1);
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s, color 0.2s;
+}
+
+.search-clear-btn:hover {
+  background: var(--color-bg-alt);
+  color: var(--color-text);
 }
 
 .activity-log-table .col-when { white-space: nowrap; width: 1%; }

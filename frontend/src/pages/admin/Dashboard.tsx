@@ -7,6 +7,12 @@ import {
   HiOutlineCurrencyDollar,
   HiOutlineStar,
   HiOutlineRefresh,
+  HiOutlineUsers,
+  HiOutlineChatAlt2,
+  HiOutlineClipboardList,
+  HiOutlineTrendingUp,
+  HiOutlineChartBar,
+  HiOutlineCheckCircle
 } from 'react-icons/hi'
 import {
   AreaChart,
@@ -288,45 +294,69 @@ export default function AdminDashboard() {
       {/* 1. Summary cards — max 7 */}
       <section className="dashboard-section dashboard-cards">
         <Link to="/admin/clients" className="admin-stat-card dashboard-card dashboard-card--blue">
-          <span className="admin-stat-value">{summary.totalClients}</span>
-          <span className="admin-stat-label">Total Clients</span>
+          <div className="dashboard-card-icon"><HiOutlineUsers /></div>
+          <div className="dashboard-card-content">
+            <span className="admin-stat-value">{summary.totalClients}</span>
+            <span className="admin-stat-label">Total Clients</span>
+          </div>
         </Link>
         <Link
           to="/admin/properties?status=available"
           className="admin-stat-card dashboard-card dashboard-card--green"
         >
-          <span className="admin-stat-value">{summary.activeListings}</span>
-          <span className="admin-stat-label">Active Listings</span>
+          <div className="dashboard-card-icon"><HiOutlineHome /></div>
+          <div className="dashboard-card-content">
+            <span className="admin-stat-value">{summary.activeListings}</span>
+            <span className="admin-stat-label">Active Listings</span>
+          </div>
         </Link>
         <Link to="/admin/inquiries" className="admin-stat-card dashboard-card dashboard-card--teal">
-          <span className="admin-stat-value">{summary.newLeadsThisMonth}</span>
-          <span className="admin-stat-label">New Leads (This Month)</span>
+          <div className="dashboard-card-icon"><HiOutlineChatAlt2 /></div>
+          <div className="dashboard-card-content">
+            <span className="admin-stat-value">{summary.newLeadsThisMonth}</span>
+            <span className="admin-stat-label">New Leads (This Month)</span>
+          </div>
         </Link>
         <Link to="/admin/inquiries" className="admin-stat-card dashboard-card dashboard-card--red">
-          <span className="admin-stat-value">{summary.pendingInquiries}</span>
-          <span className="admin-stat-label">Pending Inquiries</span>
+          <div className="dashboard-card-icon"><HiOutlineClipboardList /></div>
+          <div className="dashboard-card-content">
+            <span className="admin-stat-value">{summary.pendingInquiries}</span>
+            <span className="admin-stat-label">Pending Inquiries</span>
+          </div>
         </Link>
         <Link
           to="/admin/deals?status=Closed"
           className="admin-stat-card dashboard-card dashboard-card--yellow"
         >
-          <span className="admin-stat-value">{formatPeso(summary.monthlySales)}</span>
-          <span className="admin-stat-label">Monthly Sales</span>
+          <div className="dashboard-card-icon"><HiOutlineCurrencyDollar /></div>
+          <div className="dashboard-card-content">
+            <span className="admin-stat-value">{formatPeso(summary.monthlySales)}</span>
+            <span className="admin-stat-label">Monthly Sales</span>
+          </div>
         </Link>
         <Link
           to="/admin/deals?status=Closed"
           className="admin-stat-card dashboard-card dashboard-card--purple"
         >
-          <span className="admin-stat-value">{summary.closedDeals}</span>
-          <span className="admin-stat-label">Closed Deals</span>
+          <div className="dashboard-card-icon"><HiOutlineCheckCircle /></div>
+          <div className="dashboard-card-content">
+            <span className="admin-stat-value">{summary.closedDeals}</span>
+            <span className="admin-stat-label">Closed Deals</span>
+          </div>
         </Link>
         <Link to="/admin/deals" className="admin-stat-card dashboard-card dashboard-card--blue">
-          <span className="admin-stat-value">{summary.conversionRateText}</span>
-          <span className="admin-stat-label">Deal Conversion Rate</span>
+          <div className="dashboard-card-icon"><HiOutlineTrendingUp /></div>
+          <div className="dashboard-card-content">
+            <span className="admin-stat-value">{summary.conversionRateText}</span>
+            <span className="admin-stat-label">Deal Conversion</span>
+          </div>
         </Link>
         <Link to="/admin/deals?status=Closed" className="admin-stat-card dashboard-card dashboard-card--teal">
-          <span className="admin-stat-value">{summary.averageDealValueText}</span>
-          <span className="admin-stat-label">Average Deal Value</span>
+          <div className="dashboard-card-icon"><HiOutlineChartBar /></div>
+          <div className="dashboard-card-content">
+            <span className="admin-stat-value">{summary.averageDealValueText}</span>
+            <span className="admin-stat-label">Avg Deal Value</span>
+          </div>
         </Link>
       </section>
 

@@ -38,6 +38,20 @@ class PropertyController extends Controller
         ]);
     }
 
+    public function destroy(string $id): JsonResponse
+    {
+        $p = Property::query()->find($id);
+        if (! $p) {
+            return ApiResponse::failure('Not found.', 404);
+        }
+
+        $p->delete();
+
+        return ApiResponse::success([
+            'message' => 'Property archived successfully.',
+        ]);
+    }
+
     /**
      * Merge DB columns with `extra` JSON for full Property shape the SPA expects.
      */

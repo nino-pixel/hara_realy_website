@@ -5,6 +5,7 @@ import { PROPERTY_STATUS_LABELS } from '../data/properties'
 import { resolveStorageUrl } from '../utils/mediaUrl'
 import SavePropertyButton from './SavePropertyButton'
 import './PropertyCard.css'
+import { MdOutlineBed, MdOutlineBathtub, MdOutlineSquareFoot } from 'react-icons/md'
 
 type Props = {
   property: Property
@@ -37,11 +38,26 @@ export default function PropertyCard({ property, featured, contextPill }: Props)
           <h3 className="property-card-title">{title}</h3>
           <p className="property-card-location">{location}</p>
           {(beds > 0 || baths > 0 || area) && (
-            <ul className="property-card-specs">
-              {beds > 0 && <li>{beds} beds</li>}
-              {baths > 0 && <li>{baths} baths</li>}
-              {area && <li>{area}</li>}
-            </ul>
+            <div className="property-card-specs">
+              {beds > 0 && (
+                <div className="property-card-spec-item">
+                  <MdOutlineBed className="spec-icon" />
+                  <span>{beds}</span>
+                </div>
+              )}
+              {baths > 0 && (
+                <div className="property-card-spec-item">
+                  <MdOutlineBathtub className="spec-icon" />
+                  <span>{baths}</span>
+                </div>
+              )}
+              {area && (
+                <div className="property-card-spec-item">
+                  <MdOutlineSquareFoot className="spec-icon" />
+                  <span>{area}</span>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </Link>
