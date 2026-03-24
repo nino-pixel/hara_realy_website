@@ -5,7 +5,8 @@ import {
   HiOutlineChevronLeft, 
   HiOutlineMenu, 
   HiMoon, 
-  HiSun,
+  HiSun, 
+  HiOutlineSparkles,
   HiOutlineViewGrid,
   HiOutlineUsers,
   HiOutlineHome,
@@ -138,6 +139,9 @@ export default function AdminLayout() {
         <nav className="admin-sidebar-nav">
           <Link to="/admin/dashboard">
             <HiOutlineViewGrid className="nav-icon" /> Dashboard
+          </Link>
+          <Link to="/admin/assistant" className="admin-sidebar-nav-ai">
+            <HiOutlineSparkles className="nav-ai-icon" /> AI Assistant
           </Link>
           <Link to="/admin/clients">
             <HiOutlineUsers className="nav-icon" /> Clients

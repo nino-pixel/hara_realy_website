@@ -24,6 +24,42 @@ export interface AiResponse {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+//  PERSISTENCE HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+const STORAGE_KEY_UI_MESSAGES = 'chara_ai_ui_messages'
+const STORAGE_KEY_CHAT_HISTORY = 'chara_ai_chat_history'
+
+function saveToStorage(): void {
+  try {
+    localStorage.setItem(STORAGE_KEY_UI_MESSAGES, JSON.stringify(uiMessages))
+    localStorage.setItem(STORAGE_KEY_CHAT_HISTORY, JSON.stringify(chatHistory))
+  } catch (err) {
+    console.warn('[AiService] Failed to save conversation to localStorage:', err)
+  }
+}
+
+function loadFromStorage(): void {
+  try {
+    const storedUi = localStorage.getItem(STORAGE_KEY_UI_MESSAGES)
+    const storedChat = localStorage.getItem(STORAGE_KEY_CHAT_HISTORY)
+    
+    if (storedUi) {
+      const parsed = JSON.parse(storedUi)
+      uiMessages = parsed.map((m: any) => ({
+        ...m,
+        timestamp: new Date(m.timestamp)
+      }))
+    }
+    if (storedChat) {
+      chatHistory = JSON.parse(storedChat)
+    }
+  } catch (err) {
+    console.warn('[AiService] Failed to load conversation from localStorage:', err)
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  SESSION STATE  (resets on full page refresh)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -267,12 +303,16 @@ How may I assist you with your administrative tasks today?`,
 // Gemini multi-turn history
 let chatHistory: Array<{ role: string; parts: Part[] }> = []
 
+// Initialize from storage immediately
+loadFromStorage()
+
 export function getMessages(): Message[] {
   return [...uiMessages]
 }
 
 export function addUiMessage(msg: Message): void {
   uiMessages.push(msg)
+  saveToStorage()
 }
 
 export function resetAiChat(): Message {
@@ -291,6 +331,7 @@ export function resetAiChat(): Message {
     timestamp: new Date(),
   }
   uiMessages = [welcome]
+  saveToStorage()
   return welcome
 }
 
@@ -440,6 +481,8 @@ export async function processAiMessage(userMessage: string): Promise<AiResponse>
   if (chatHistory.length > 40) {
     chatHistory = chatHistory.slice(chatHistory.length - 40)
   }
+
+  saveToStorage()
 
   return {
     content: finalText,
