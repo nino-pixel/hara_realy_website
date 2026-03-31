@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { HiMoon, HiSun } from 'react-icons/hi'
+import { HiMoon, HiSun, HiMenu, HiX } from 'react-icons/hi'
 import { useInquiryLink, useMarketingLinkTo } from '../hooks/useMarketingLinkTo'
 import { useSavedPropertiesCount } from '../hooks/useSavedProperties'
 import { useScrollTopOnRouteChange } from '../hooks/useScrollTopOnRouteChange'
@@ -9,6 +9,16 @@ import { useDarkMode } from '../hooks/useDarkMode'
 import PageTransition from './PageTransition'
 import faviconLogo from '../assets/favicon.png'
 import './Layout.css'
+
+const menuVariants: any = {
+  closed: { x: '100%', transition: { type: 'spring', stiffness: 300, damping: 35 } },
+  open: { x: 0, transition: { type: 'spring', stiffness: 300, damping: 35, staggerChildren: 0.08, delayChildren: 0.2 } },
+}
+
+const itemVariants: any = {
+  closed: { opacity: 0, x: 25 },
+  open: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 300, damping: 30 } },
+}
 
 export default function Layout() {
   const location = useLocation()
@@ -49,16 +59,30 @@ export default function Layout() {
   const contactTo = useMarketingLinkTo('/contact')
   const inquireTo = useInquiryLink()
 
+  const navLinks = [
+    { to: homeTo, label: 'Home' },
+    { to: propertiesTo, label: 'Properties' },
+    { to: savedTo, label: 'Saved', isSaved: true },
+    { to: inquireTo, label: 'Inquire' },
+    { to: aboutTo, label: 'About' },
+    { to: helpTo, label: 'Help' },
+    { to: contactTo, label: 'Contact' },
+  ]
+
   return (
     <div className="layout">
-      {navOpen ? (
-        <div
-          className="nav-overlay"
-          role="presentation"
-          aria-hidden
-          onClick={closeNav}
-        />
-      ) : null}
+      <AnimatePresence>
+        {navOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="nav-overlay"
+            onClick={closeNav}
+          />
+        )}
+      </AnimatePresence>
+
       <header className={`header${navOpen ? ' header--menu-open' : ''}`}>
         <div className="container header-inner">
           <Link to={homeTo} className="logo" onClick={closeNav}>
@@ -68,12 +92,12 @@ export default function Layout() {
               className="logo-img"
               width={56}
               height={56}
-              decoding="async"
             />
             <span className="logo-text">
               <span className="logo-mark">CHara</span> Realty
             </span>
           </Link>
+
           <button
             type="button"
             className={`nav-toggle${navOpen ? ' nav-toggle--open' : ''}`}
@@ -88,48 +112,98 @@ export default function Layout() {
               <span />
             </span>
           </button>
-          <nav id="primary-navigation" className={`nav${navOpen ? ' nav--open' : ''}`}>
-            <Link to={homeTo} onClick={closeNav}>
-              Home
-            </Link>
-            <Link to={propertiesTo} onClick={closeNav}>
-              Properties
-            </Link>
-            <Link to={savedTo} className="nav-link-saved" onClick={closeNav}>
-              Saved
-              {savedCount > 0 ? (
-                <span className="nav-saved-badge" aria-label={`${savedCount} saved`}>
-                  {savedCount > 99 ? '99+' : savedCount}
-                </span>
-              ) : null}
-            </Link>
-            <Link to={inquireTo} onClick={closeNav}>
-              Inquire
-            </Link>
-            <Link to={aboutTo} onClick={closeNav}>
-              About
-            </Link>
-            <Link to={helpTo} onClick={closeNav}>
-              Help
-            </Link>
-            <Link to={contactTo} onClick={closeNav}>
-              Contact
-            </Link>
-            <Link to="/admin/login" className="btn btn-outline btn-nav-login" onClick={closeNav}>
+
+          {/* Desktop Nav */}
+          <nav className="nav nav--desktop">
+            {navLinks.map((link) => (
+              <Link
+                key={typeof link.to === 'string' ? link.to : JSON.stringify(link.to)}
+                to={link.to}
+                className={link.isSaved ? 'nav-link-saved' : ''}
+              >
+                {link.label}
+                {link.isSaved && savedCount > 0 && (
+                  <span className="nav-saved-badge">
+                    {savedCount > 99 ? '99+' : savedCount}
+                  </span>
+                )}
+              </Link>
+            ))}
+            <Link to="/admin/login" className="btn btn-outline btn-nav-login">
               Login
             </Link>
           </nav>
+
           <button
             type="button"
-            className="btn-dark-mode"
+            className="btn-dark-mode btn-dark-mode-desktop"
             onClick={toggleDark}
             aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-            title={dark ? 'Light mode' : 'Dark mode'}
           >
-            {dark ? <HiSun aria-hidden /> : <HiMoon aria-hidden />}
+            {dark ? <HiSun /> : <HiMoon />}
           </button>
         </div>
       </header>
+
+      {/* Mobile Nav Drawer - Moved outside header-inner for proper fixed positioning */}
+      <AnimatePresence>
+        {navOpen && (
+          <motion.nav
+            id="primary-navigation"
+            className="nav nav--mobile"
+            variants={menuVariants}
+            initial="closed"
+            animate="open"
+            exit="closed"
+          >
+            <button 
+              type="button" 
+              className="btn-mobile-close" 
+              onClick={closeNav}
+              aria-label="Close menu"
+            >
+              <HiX />
+            </button>
+
+            {navLinks.map((link, index) => (
+              <motion.div 
+                key={index} 
+                variants={itemVariants}
+                className="nav-mobile-item"
+              >
+                <Link
+                  to={link.to}
+                  onClick={closeNav}
+                  className={link.isSaved ? 'nav-link-saved' : ''}
+                >
+                  {link.label}
+                  {link.isSaved && savedCount > 0 && (
+                    <span className="nav-saved-badge">
+                      {savedCount > 99 ? '99+' : savedCount}
+                    </span>
+                  )}
+                </Link>
+              </motion.div>
+            ))}
+            
+            <motion.div variants={itemVariants} className="nav-mobile-footer">
+              <button
+                type="button"
+                className="btn btn-dark-mode-mobile"
+                onClick={toggleDark}
+                aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {dark ? <HiSun /> : <HiMoon />}
+                <span>{dark ? 'Light Mode' : 'Dark Mode'}</span>
+              </button>
+              
+              <Link to="/admin/login" className="btn btn-outline btn-nav-login" onClick={closeNav}>
+                Login
+              </Link>
+            </motion.div>
+          </motion.nav>
+        )}
+      </AnimatePresence>
       <main className="main">
         <AnimatePresence mode="wait">
           <PageTransition key={location.pathname}>
