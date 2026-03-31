@@ -12,6 +12,10 @@ export type PropertyImageUpload = {
   galleryFiles: File[]
   /** Sent as multipart field `floorPlan` — never base64 in JSON */
   floorPlanFile: File | null
+  /** Sent as multipart fields — never base64 in JSON */
+  documentContractFile: File | null
+  documentReservationFormFile: File | null
+  documentTitleCopyFile: File | null
 }
 
 /**
@@ -19,7 +23,12 @@ export type PropertyImageUpload = {
  */
 export function stripPropertyForMultipartJson(
   p: Property,
-  options?: { omitFloorPlanPath?: boolean }
+  options?: {
+    omitFloorPlanPath?: boolean
+    omitDocumentContractPath?: boolean
+    omitDocumentReservationFormPath?: boolean
+    omitDocumentTitleCopyPath?: boolean
+  }
 ): Property {
   const raw = { ...p } as Record<string, unknown>
 
@@ -34,9 +43,27 @@ export function stripPropertyForMultipartJson(
   if (typeof raw.floorPlan === 'string' && raw.floorPlan.startsWith('data:')) {
     delete raw.floorPlan
   }
+  if (typeof raw.documentContract === 'string' && raw.documentContract.startsWith('data:')) {
+    delete raw.documentContract
+  }
+  if (typeof raw.documentReservationForm === 'string' && raw.documentReservationForm.startsWith('data:')) {
+    delete raw.documentReservationForm
+  }
+  if (typeof raw.documentTitleCopy === 'string' && raw.documentTitleCopy.startsWith('data:')) {
+    delete raw.documentTitleCopy
+  }
 
   if (options?.omitFloorPlanPath) {
     delete raw.floorPlan
+  }
+  if (options?.omitDocumentContractPath) {
+    delete raw.documentContract
+  }
+  if (options?.omitDocumentReservationFormPath) {
+    delete raw.documentReservationForm
+  }
+  if (options?.omitDocumentTitleCopyPath) {
+    delete raw.documentTitleCopy
   }
 
   return raw as unknown as Property
@@ -71,12 +98,18 @@ export async function persistPropertyToApi(
   const hasFiles = !!(
     upload?.coverFile ||
     (upload?.galleryFiles?.length ?? 0) > 0 ||
-    upload?.floorPlanFile
+    upload?.floorPlanFile ||
+    upload?.documentContractFile ||
+    upload?.documentReservationFormFile ||
+    upload?.documentTitleCopyFile
   )
 
   if (hasFiles) {
     const body = stripPropertyForMultipartJson(p, {
       omitFloorPlanPath: Boolean(upload?.floorPlanFile),
+      omitDocumentContractPath: Boolean(upload?.documentContractFile),
+      omitDocumentReservationFormPath: Boolean(upload?.documentReservationFormFile),
+      omitDocumentTitleCopyPath: Boolean(upload?.documentTitleCopyFile),
     })
     const fd = new FormData()
     fd.append('property', JSON.stringify(body))
@@ -88,6 +121,15 @@ export async function persistPropertyToApi(
     }
     if (upload?.floorPlanFile) {
       fd.append('floorPlan', upload.floorPlanFile)
+    }
+    if (upload?.documentContractFile) {
+      fd.append('documentContract', upload.documentContractFile)
+    }
+    if (upload?.documentReservationFormFile) {
+      fd.append('documentReservationForm', upload.documentReservationFormFile)
+    }
+    if (upload?.documentTitleCopyFile) {
+      fd.append('documentTitleCopy', upload.documentTitleCopyFile)
     }
 
     const res = await apiPostFormData<ApiPropertyResponse>('/properties', fd, {

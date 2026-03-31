@@ -4,7 +4,7 @@ import { HiOutlineCheckCircle, HiOutlineXCircle, HiOutlineTag, HiOutlineScale } 
 import { resolveStorageUrl } from '../../utils/mediaUrl'
 import { getPropertyById, setPropertyStore } from '../../data/properties'
 import { getActivityStore, getActivityActionLabel } from '../../data/activityLog'
-import { useAdminAuth } from '../../context/AdminAuth'
+import { useAdminAuth } from '../../hooks/useAdminAuth'
 import {
   getClientStore,
   getTransactionsByClientId,
@@ -547,7 +547,7 @@ export default function AdminPropertyProfile() {
                   <span className="property-profile-doc-status property-profile-doc-status--uploaded">
                     <HiOutlineCheckCircle aria-hidden /> Uploaded
                   </span>
-                  <a href={property.documentContract} target="_blank" rel="noopener noreferrer" className="property-profile-doc-link">View</a>
+                  <a href={resolveStorageUrl(property.documentContract)} target="_blank" rel="noopener noreferrer" className="property-profile-doc-link">View</a>
                 </>
               ) : (
                 <span className="property-profile-doc-status property-profile-doc-status--missing">
@@ -562,7 +562,7 @@ export default function AdminPropertyProfile() {
                   <span className="property-profile-doc-status property-profile-doc-status--uploaded">
                     <HiOutlineCheckCircle aria-hidden /> Uploaded
                   </span>
-                  <a href={property.documentReservationForm} target="_blank" rel="noopener noreferrer" className="property-profile-doc-link">View</a>
+                  <a href={resolveStorageUrl(property.documentReservationForm)} target="_blank" rel="noopener noreferrer" className="property-profile-doc-link">View</a>
                 </>
               ) : (
                 <span className="property-profile-doc-status property-profile-doc-status--missing">
@@ -577,7 +577,7 @@ export default function AdminPropertyProfile() {
                   <span className="property-profile-doc-status property-profile-doc-status--uploaded">
                     <HiOutlineCheckCircle aria-hidden /> Uploaded
                   </span>
-                  <a href={property.documentTitleCopy} target="_blank" rel="noopener noreferrer" className="property-profile-doc-link">View</a>
+                  <a href={resolveStorageUrl(property.documentTitleCopy)} target="_blank" rel="noopener noreferrer" className="property-profile-doc-link">View</a>
                 </>
               ) : (
                 <span className="property-profile-doc-status property-profile-doc-status--missing">

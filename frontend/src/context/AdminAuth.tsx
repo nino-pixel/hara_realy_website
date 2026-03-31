@@ -1,7 +1,5 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useState,
   type ReactNode,
@@ -10,17 +8,7 @@ import type { AdminUser } from '../data/mockAdmin'
 import { AUTH_SESSION_EXPIRED_EVENT, clearAuthSession, getAuthToken } from '../services/authStore'
 import { runApiBootstrap } from '../services/apiBootstrap'
 import { fetchCurrentUser, loginWithPassword, logoutApi } from '../services/authApi'
-
-type AdminAuthContextType = {
-  user: AdminUser | null
-  /** True after initial session check (token → /auth/me). */
-  isReady: boolean
-  isAuthenticated: boolean
-  loginWithCredentials: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
-  logout: () => Promise<void>
-}
-
-const AdminAuthContext = createContext<AdminAuthContextType | null>(null)
+import { AdminAuthContext } from './AdminAuthContext'
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AdminUser | null>(null)
@@ -103,8 +91,3 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   )
 }
 
-export function useAdminAuth() {
-  const ctx = useContext(AdminAuthContext)
-  if (!ctx) throw new Error('useAdminAuth must be used within AdminAuthProvider')
-  return ctx
-}

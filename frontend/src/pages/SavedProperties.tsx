@@ -1,35 +1,45 @@
 import { useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { useMarketingLinkTo } from '../hooks/useMarketingLinkTo'
 import PropertyCard from '../components/PropertyCard'
 import { setSavedPropertyIds } from '../data/savedPropertiesStorage'
 import { useSavedPropertyIds } from '../hooks/useSavedProperties'
-import { fetchProperties, isPropertyPublicListing, type Property } from '../services/propertiesService'
+import { useMarketingLinkTo } from '../hooks/useMarketingLinkTo'
+import { fetchProperties } from '../services/propertiesService'
+import {
+  getPublicPropertyCatalog,
+  getRootPropertyByAnyId,
+} from '../utils/propertyGrouping'
 import './SavedProperties.css'
 
 export default function SavedProperties() {
   const propertiesTo = useMarketingLinkTo('/properties')
   const savedIds = useSavedPropertyIds()
 
-  // Drop unknown / non-public IDs when visiting this page (keeps localStorage tidy)
   useEffect(() => {
-    const all = fetchProperties()
-    const byId = new Map(all.map((p) => [p.id, p]))
-    const pruned = savedIds.filter((id) => {
-      const p = byId.get(id)
-      return p != null && isPropertyPublicListing(p)
-    })
-    if (pruned.length === savedIds.length) return
-    setSavedPropertyIds(pruned)
+    const allProperties = fetchProperties()
+    const normalizedIds = Array.from(
+      new Set(
+        savedIds
+          .map((id) => getRootPropertyByAnyId(allProperties, id)?.id ?? null)
+          .filter((id): id is string => id != null)
+      )
+    )
+    if (normalizedIds.length === savedIds.length && normalizedIds.every((id, index) => id === savedIds[index])) {
+      return
+    }
+    setSavedPropertyIds(normalizedIds)
   }, [savedIds])
 
   const savedProperties = useMemo(() => {
-    const all = fetchProperties()
-    const byId = new Map(all.map((p) => [p.id, p]))
-    const list: Property[] = []
+    const allProperties = fetchProperties()
+    const catalog = getPublicPropertyCatalog(allProperties)
+    const byId = new Map(catalog.map((item) => [item.rootProperty.id, item]))
+    const list = []
     for (const id of savedIds) {
-      const p = byId.get(id)
-      if (p && isPropertyPublicListing(p)) list.push(p)
+      const rootId = getRootPropertyByAnyId(allProperties, id)?.id
+      if (!rootId) continue
+      const item = byId.get(rootId)
+      if (item) list.push(item)
     }
     return list
   }, [savedIds])
@@ -53,9 +63,9 @@ export default function SavedProperties() {
           </div>
         ) : (
           <ul className="saved-properties-grid">
-            {savedProperties.map((p) => (
-              <li key={p.id}>
-                <PropertyCard property={p} />
+            {savedProperties.map((item) => (
+              <li key={item.rootProperty.id}>
+                <PropertyCard property={item.displayProperty} metaNote={item.summaryNote} />
               </li>
             ))}
           </ul>

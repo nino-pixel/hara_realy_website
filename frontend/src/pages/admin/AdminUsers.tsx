@@ -1,4 +1,4 @@
-import { useAdminAuth } from '../../context/AdminAuth'
+import { useAdminAuth } from '../../hooks/useAdminAuth'
 import { getUsersStore, USER_ROLE_LABELS, type UserRole } from '../../data/users'
 import './admin-common.css'
 import './Users.css'

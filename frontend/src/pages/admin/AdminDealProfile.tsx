@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import { HiOutlineArrowLeft, HiOutlineRefresh, HiOutlineCash, HiOutlineDocument, HiOutlinePencil } from 'react-icons/hi'
@@ -53,9 +53,12 @@ export default function AdminDealProfile() {
   const [documentForm, setDocumentForm] = useState<{ doc: 'reservationForm' | 'contract' | 'receipt'; fileRef: string }>({ doc: 'contract', fileRef: '' })
   const [noteForm, setNoteForm] = useState('')
 
-  useEffect(() => {
-    if (dealId) setDeal(getDealByDealId(dealId))
-  }, [dealId])
+  // Sync: ensure deal state matches dealId in URL
+  const [prevDealIdSync, setPrevDealIdSync] = useState(dealId)
+  if (dealId !== prevDealIdSync) {
+    setPrevDealIdSync(dealId)
+    setDeal(dealId ? getDealByDealId(dealId) : null)
+  }
 
   const refreshDeal = () => {
     if (dealId) setDeal(getDealByDealId(dealId))

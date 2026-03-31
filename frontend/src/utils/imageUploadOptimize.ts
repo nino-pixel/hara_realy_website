@@ -1,11 +1,10 @@
 /**
- * Resize (max width 1920px), JPEG encode ~0.7 quality, cap output at 2MB for property uploads.
+ * Resize (max width 1920px) and JPEG encode for property uploads.
+ * Best effort only: never reject solely because the resulting file is still large.
  */
 
 const MAX_WIDTH = 1920
-const MAX_BYTES = 2 * 1024 * 1024
 const BASE_QUALITY = 0.7
-const MIN_QUALITY = 0.45
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -44,24 +43,14 @@ export async function optimizeImageForUpload(file: File): Promise<File> {
     ctx.fillRect(0, 0, cw, ch)
     ctx.drawImage(img, 0, 0, cw, ch)
 
-    let q = BASE_QUALITY
-    let blob: Blob | null = null
-    while (q >= MIN_QUALITY) {
-      blob = await new Promise<Blob | null>((resolve) =>
-        canvas.toBlob((b) => resolve(b), 'image/jpeg', q)
-      )
-      if (blob && blob.size <= MAX_BYTES) break
-      q -= 0.08
-    }
-
-    if (!blob || blob.size > MAX_BYTES) {
-      throw new Error(
-        `Image still exceeds ${Math.round(MAX_BYTES / 1024 / 1024)}MB after optimization. Try a smaller source file.`
-      )
-    }
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob((b) => resolve(b), 'image/jpeg', BASE_QUALITY)
+    )
+    if (!blob) return file
 
     const name = file.name.replace(/\.[^.]+$/, '') + '.jpg'
-    return new File([blob], name, { type: 'image/jpeg' })
+    const optimized = new File([blob], name, { type: 'image/jpeg' })
+    return optimized.size < file.size ? optimized : file
   } finally {
     URL.revokeObjectURL(url)
   }

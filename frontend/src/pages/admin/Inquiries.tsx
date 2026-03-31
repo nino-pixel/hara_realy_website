@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { HiOutlineCash, HiOutlinePhone, HiOutlinePlus, HiOutlineTrash, HiOutlineUser } from 'react-icons/hi'
 import Swal from 'sweetalert2'
@@ -11,7 +11,7 @@ import {
   financingMethodLabel,
 } from '../../data/leadQualification'
 import type { InquiryRecord, InquiryStatus, LeadPriority } from '../../data/mockAdmin'
-import { convertLeadToClient, fetchClients } from '../../services/clientsService'
+import { convertLeadToClientAndPersist, fetchClients } from '../../services/clientsService'
 import {
   fetchInquiries,
   markInquiryAsContacted,
@@ -29,21 +29,45 @@ import FormActions from '../../components/FormActions'
 import './admin-common.css'
 import './Inquiries.css'
 
+const INQUIRY_STATUSES: InquiryStatus[] = ['new', 'contacted', 'qualified', 'converted', 'lost']
+const PRIORITY_OPTIONS: LeadPriority[] = ['low', 'medium', 'high']
+const SOURCE_OPTIONS = ['facebook', 'website', 'walk-in', 'referral'] as const
+type LeadSource = (typeof SOURCE_OPTIONS)[number]
+const INQUIRY_STATUS_LABELS: Record<InquiryStatus, string> = {
+  new: 'Pending',
+  contacted: 'Contacted',
+  qualified: 'Qualified',
+  converted: 'Converted',
+  lost: 'Lost',
+}
+
+const normalizeSource = (raw: string): LeadSource => {
+  const s = String(raw).toLowerCase()
+  if (s.includes('facebook')) return 'facebook'
+  if (s.includes('walk')) return 'walk-in'
+  if (s.includes('referral')) return 'referral'
+  if (s.includes('website') || s.includes('property page')) return 'website'
+  return 'website'
+}
+
+const getLeadSource = (i: InquiryRecord): LeadSource | null => {
+  const auto = i.source_auto ?? null
+  const manual = i.source_manual ?? null
+  if (auto) return normalizeSource(auto)
+  if (manual) return normalizeSource(manual)
+  return null
+}
+
+const getInquirySourceDisplay = (i: InquiryRecord) => {
+  const source = getLeadSource(i)
+  if (source) return source
+  return '—'
+}
+
 export default function AdminInquiries() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const actor = 'Admin'
-  const INQUIRY_STATUSES: InquiryStatus[] = ['new', 'contacted', 'qualified', 'converted', 'lost']
-  const PRIORITY_OPTIONS: LeadPriority[] = ['low', 'medium', 'high']
-  const SOURCE_OPTIONS = ['facebook', 'website', 'walk-in', 'referral'] as const
-  type LeadSource = (typeof SOURCE_OPTIONS)[number]
-  const INQUIRY_STATUS_LABELS: Record<InquiryStatus, string> = {
-    new: 'Pending',
-    contacted: 'Contacted',
-    qualified: 'Qualified',
-    converted: 'Converted',
-    lost: 'Lost',
-  }
 
   const [inquiries, setInquiries] = useState<InquiryRecord[]>(() => fetchInquiries())
   const [searchQuery, setSearchQuery] = useState('')
@@ -54,9 +78,12 @@ export default function AdminInquiries() {
   const [archiveError, setArchiveError] = useState('')
   const properties = fetchProperties().filter((p) => !p.archived)
 
-  useEffect(() => {
+  // One-time initialization to hide loading spinner
+  const [hasMounted, setHasMounted] = useState(false)
+  if (!hasMounted) {
+    setHasMounted(true)
     setLoading(false)
-  }, [])
+  }
 
   /** Re-load from shared store (same tab after submit, or other tab via localStorage). */
   useEffect(() => {
@@ -84,31 +111,7 @@ export default function AdminInquiries() {
     })
   }
 
-  const normalizeSource = (raw: string): LeadSource => {
-    const s = String(raw).toLowerCase()
-    if (s.includes('facebook')) return 'facebook'
-    if (s.includes('walk')) return 'walk-in'
-    if (s.includes('referral')) return 'referral'
-    if (s.includes('website') || s.includes('property page')) return 'website'
-    return 'website'
-  }
-
-  const getLeadSource = (i: InquiryRecord): LeadSource | null => {
-    const auto = i.source_auto ?? null
-    const manual = i.source_manual ?? null
-    if (auto) return normalizeSource(auto)
-    if (manual) return normalizeSource(manual)
-    return null
-  }
-
-  const getInquirySourceDisplay = (i: InquiryRecord) => {
-    const source = getLeadSource(i)
-    if (source) return source
-    return '—'
-  }
-
-  /** All table-visible (and id) fields for global search */
-  const inquirySearchHaystack = (i: InquiryRecord): string => {
+  const inquirySearchHaystack = useCallback((i: InquiryRecord): string => {
     const parts: string[] = [
       i.id,
       i.name,
@@ -145,12 +148,25 @@ export default function AdminInquiries() {
     if (i.interestRate != null) parts.push(String(i.interestRate), `${i.interestRate}%`)
     if (i.downpaymentPercent != null) parts.push(String(i.downpaymentPercent))
     return parts.join(' ').toLowerCase()
-  }
+  }, [])
 
   const handleConvertToClient = async (lead: InquiryRecord) => {
     if (lead.status === 'converted') return
 
-    const { clientId, created } = convertLeadToClient(lead)
+    let clientId: string | null = null
+    let created = false
+    try {
+      const converted = await convertLeadToClientAndPersist(lead)
+      clientId = converted.clientId
+      created = converted.created
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Could not convert lead',
+        text: err instanceof Error ? err.message : 'Failed to save client to the server.',
+      })
+      return
+    }
     const updatedRow: InquiryRecord = {
       ...lead,
       status: 'converted',
@@ -180,7 +196,7 @@ export default function AdminInquiries() {
       actor,
       action: 'created',
       entityType: 'client',
-      entityId: clientId,
+      entityId: clientId ?? '',
       entityLabel: lead.name,
       details: created
         ? `Converted lead to new client: ${lead.name} (${lead.email})`
@@ -196,33 +212,41 @@ export default function AdminInquiries() {
       timerProgressBar: true,
     })
 
-    navigate(`/admin/clients/${clientId}?fromLead=1`)
+    if (clientId) {
+      navigate(`/admin/clients/${clientId}?fromLead=1`)
+    }
   }
 
   const handleCreateDealFromLead = async (lead: InquiryRecord) => {
-    let clientId =
-      lead.linkedClientId ??
-      fetchClients().find((c) => c.email.toLowerCase() === lead.email.trim().toLowerCase())?.id ??
-      null
-    if (!clientId) {
-      const { clientId: cid } = convertLeadToClient(lead)
-      clientId = cid
-      const synced: InquiryRecord = { ...lead, status: 'converted', linkedClientId: cid }
-      updateInquiries((prev) =>
-        prev.map((row) =>
-          row.id === lead.id ? { ...row, status: 'converted', linkedClientId: clientId! } : row
-        )
-      )
-      try {
-        await updateInquiryInApi(synced)
-      } catch {
-        /* local CRM updated; DB sync optional */
-      }
+    let clientId: string | null = null
+    try {
+      const converted = await convertLeadToClientAndPersist(lead)
+      clientId = converted.clientId
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Could not create client for this deal',
+        text: err instanceof Error ? err.message : 'Failed to save client to the server.',
+      })
+      return
     }
+
+    const synced: InquiryRecord = { ...lead, status: 'converted', linkedClientId: clientId }
+    updateInquiries((prev) =>
+      prev.map((row) =>
+        row.id === lead.id ? { ...row, status: 'converted', linkedClientId: clientId } : row
+      )
+    )
+    try {
+      await updateInquiryInApi(synced)
+    } catch {
+      /* local CRM updated; DB sync optional */
+    }
+
     const client = fetchClients().find((c) => c.id === clientId)
     const params = new URLSearchParams({
       createDeal: '1',
-      clientId: clientId!,
+      clientId: clientId ?? '',
       clientName: client?.name ?? lead.name,
       leadOriginId: lead.id,
     })
@@ -399,7 +423,7 @@ export default function AdminInquiries() {
     })
 
     return list
-  }, [inquiries, searchQuery])
+  }, [inquiries, searchQuery, inquirySearchHaystack])
 
   const focusInquiryId = searchParams.get('focus')
   useEffect(() => {

@@ -28,6 +28,13 @@
   background: rgba(0, 0, 0, 0.3) !important;
 }
 
+body.swal2-toast-shown > .swal2-container,
+.swal2-container:has(.swal2-popup.swal2-toast) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: transparent !important;
+}
+
 .admin-page-title { font-size: 1.35rem; margin: 0 0 0.25rem; }
 .admin-page-subtitle { color: var(--color-text-muted); font-size: 0.95rem; margin: 0 0 1rem; }
 .admin-toolbar { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
@@ -532,4 +539,3 @@ a.btn-icon-btn[data-tooltip] {
 [data-theme="dark"] .admin-table tbody tr.admin-inquiry-row--followup-upcoming:hover td {
   background: rgba(148, 163, 184, 0.18) !important;
 }
-

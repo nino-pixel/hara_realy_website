@@ -46,7 +46,7 @@ function loadFromStorage(): void {
     
     if (storedUi) {
       const parsed = JSON.parse(storedUi)
-      uiMessages = parsed.map((m: any) => ({
+      uiMessages = parsed.map((m: Message) => ({
         ...m,
         timestamp: new Date(m.timestamp)
       }))
@@ -386,7 +386,6 @@ export async function processAiMessage(userMessage: string): Promise<AiResponse>
 
   let response = await chat.sendMessage(userMessage)
   const actions: string[] = []
-  let iterationErrors = 0
 
   // ── AGENTIC LOOP ──────────────────────────────────────────────────────────
   // Process tool calls up to 10 rounds. On each round:
@@ -429,7 +428,6 @@ export async function processAiMessage(userMessage: string): Promise<AiResponse>
           },
         })
       } catch (toolError: unknown) {
-        iterationErrors++
         sessionStats.errorsThisSession++
 
         const errorMessage =

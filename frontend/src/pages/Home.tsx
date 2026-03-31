@@ -8,7 +8,8 @@ import {
   type PropertyClientStats,
 } from '../services/analyticsService'
 import { fetchClients } from '../services/clientsService'
-import { fetchProperties, isPropertyPublicListing, type Property } from '../services/propertiesService'
+import { fetchProperties, type Property } from '../services/propertiesService'
+import { getPublicPropertyCatalog, type PropertyCatalogItem } from '../utils/propertyGrouping'
 import PropertyCard from '../components/PropertyCard'
 import './Home.css'
 
@@ -194,6 +195,7 @@ export default function Home() {
   const inquiryTo = useInquiryLink()
   const propertiesTo = useMarketingLinkTo('/properties')
   const homeRootRef = useRef<HTMLDivElement>(null)
+  const [now] = useState(() => Date.now())
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [heroSlide, setHeroSlide] = useState(0)
@@ -319,14 +321,17 @@ export default function Home() {
 
   const { featured, contextPills, newListingsThisWeek, trustClients, trustListings } = useMemo(() => {
     const agg = safeAnalyticsMap()
-    const pool = fetchProperties().filter((p) => isPropertyPublicListing(p) && p.status === 'available')
-    const sortByEngagement = (a: Property, b: Property) =>
-      engagementScore(b.id, agg) - engagementScore(a.id, agg) || (b.leads ?? 0) - (a.leads ?? 0)
+    const pool = getPublicPropertyCatalog(fetchProperties()).filter(
+      (item) => item.displayProperty.status === 'available'
+    )
+    const sortByEngagement = (a: PropertyCatalogItem, b: PropertyCatalogItem) =>
+      engagementScore(b.displayProperty.id, agg) - engagementScore(a.displayProperty.id, agg) ||
+      (b.displayProperty.leads ?? 0) - (a.displayProperty.leads ?? 0)
 
-    const featuredByAdmin = pool.filter((p) => p.featuredListing === true).sort(sortByEngagement)
-    const rest = pool.filter((p) => p.featuredListing !== true).sort(sortByEngagement)
+    const featuredByAdmin = pool.filter((item) => item.displayProperty.featuredListing === true).sort(sortByEngagement)
+    const rest = pool.filter((item) => item.displayProperty.featuredListing !== true).sort(sortByEngagement)
 
-    const picked: Property[] = []
+    const picked: PropertyCatalogItem[] = []
     const maxFeatured = 6
     for (const p of featuredByAdmin) {
       if (picked.length >= maxFeatured) break
@@ -337,12 +342,13 @@ export default function Home() {
       picked.push(p)
     }
 
-    const pills = assignContextPills(picked, agg)
+    const pills = assignContextPills(picked.map((item) => item.displayProperty), agg)
 
     const weekMs = 7 * 24 * 60 * 60 * 1000
-    const now = Date.now()
     const newThisWeek = pool.filter(
-      (p) => p.updatedAt && now - new Date(p.updatedAt).getTime() < weekMs
+      (item) =>
+        item.displayProperty.updatedAt &&
+        now - new Date(item.displayProperty.updatedAt).getTime() < weekMs
     ).length
 
     const clients = fetchClients().filter((c) => !c.archived)
@@ -355,7 +361,7 @@ export default function Home() {
       trustClients: trustClientsCount,
       trustListings: pool.length,
     }
-  }, [])
+  }, [now])
 
   const handleBrowse = () => {
     const q = searchQuery.trim()
@@ -541,8 +547,14 @@ export default function Home() {
                 </p>
               ) : (
                 <div className="property-grid">
-                  {featured.map((p) => (
-                    <PropertyCard key={p.id} property={p} featured contextPill={contextPills[p.id]} />
+                  {featured.map((item) => (
+                    <PropertyCard
+                      key={item.rootProperty.id}
+                      property={item.displayProperty}
+                      featured
+                      contextPill={contextPills[item.displayProperty.id]}
+                      metaNote={item.summaryNote}
+                    />
                   ))}
                 </div>
               )}

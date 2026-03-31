@@ -104,11 +104,12 @@ export default function MonthlyPaymentCalculator({
     return typeof fromStored === 'number' ? clamp(fromStored, 0, 40) : DEFAULT_RATE
   })
 
-  useEffect(() => {
-    if (rateLocked) {
-      setInterestRate(clamp(lockedAnnualInterestRate!, 0, 40))
-    }
-  }, [propertyId, rateLocked, lockedAnnualInterestRate])
+  // Sync: ensure interestRate is up-to-date with locked value from props
+  const [prevLockRate, setPrevLockRate] = useState(lockedAnnualInterestRate)
+  if (lockedAnnualInterestRate !== prevLockRate) {
+    setPrevLockRate(lockedAnnualInterestRate)
+    if (rateLocked) setInterestRate(clamp(lockedAnnualInterestRate!, 0, 40))
+  }
 
   useEffect(() => {
     saveStored(propertyId, {

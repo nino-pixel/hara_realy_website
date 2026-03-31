@@ -17,7 +17,7 @@ import {
   HiOutlineArchive,
   HiOutlineUserGroup
 } from 'react-icons/hi'
-import { useAdminAuth } from '../../context/AdminAuth'
+import { useAdminAuth } from '../../hooks/useAdminAuth'
 import { useDarkMode } from '../../hooks/useDarkMode'
 import Swal from 'sweetalert2'
 import PageTransition from '../../components/PageTransition'

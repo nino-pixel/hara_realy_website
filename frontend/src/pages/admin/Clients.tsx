@@ -24,7 +24,7 @@ import {
   getBarangaysForMunicipality,
   isValidPhMobile09,
 } from '../../data/bulacanAddress'
-import { useAdminAuth } from '../../context/AdminAuth'
+import { useAdminAuth } from '../../hooks/useAdminAuth'
 import './admin-common.css'
 import './Clients.css'
 
@@ -77,12 +77,17 @@ export default function AdminClients() {
   const [bulkArchiveReason, setBulkArchiveReason] = useState('')
   const [bulkArchiveError, setBulkArchiveError] = useState('')
 
-  useEffect(() => {
-    setClients(fetchClients())
+  // Initialize: stop loading spinner on first mount if we haven't already
+  const [hasInit, setHasInit] = useState(false)
+  if (!hasInit) {
+    setHasInit(true)
     setLoading(false)
-  }, [])
+  }
 
-  useEffect(() => {
+  // Sync: ensure editingClient state matches location state for external "Edit" triggers
+  const [prevLocationKey, setPrevLocationKey] = useState(location.key)
+  if (location.key !== prevLocationKey) {
+    setPrevLocationKey(location.key)
     const editId = (location.state as { editId?: string } | null)?.editId
     if (editId) {
       const c = fetchClients().find((x) => x.id === editId)
@@ -92,7 +97,7 @@ export default function AdminClients() {
       }
       navigate('/admin/clients', { replace: true, state: {} })
     }
-  }, [location.state, navigate])
+  }
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

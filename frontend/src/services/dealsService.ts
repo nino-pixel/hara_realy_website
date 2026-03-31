@@ -14,6 +14,7 @@ import {
   deleteTransaction,
   type DealPaymentEntry,
   type DealStatusHistoryEntry,
+  type ClientTransactionRow,
 } from '../data/clientsData'
 import { getPropertyStore } from '../data/properties'
 import { logActivity } from '../data/activityLog'
@@ -51,7 +52,7 @@ export function fetchActivePropertiesForDeals() {
   return getPropertyStore().filter((p) => !p.archived)
 }
 
-export function createDealTransaction(clientId: string, row: any) {
+export function createDealTransaction(clientId: string, row: ClientTransactionRow) {
   if (!clientId) {
     throw new Error('clientId is required when creating a deal')
   }
@@ -75,27 +76,25 @@ export function createDealTransaction(clientId: string, row: any) {
 
 export function updateDealTransaction(
   dealIdOrClientId: string,
-  updatesOrTransactionId: any,
-  maybeUpdates?: any
+  updatesOrTransactionId: string | Record<string, unknown> | ((prev: Record<string, unknown>) => Record<string, unknown>),
+  maybeUpdates?: Record<string, unknown>
 ) {
   // New API: updateDealTransaction(dealId, updates | updater)
   if (maybeUpdates === undefined) {
     const dealId = dealIdOrClientId
-    const updaterOrUpdates = updatesOrTransactionId as
-      | ((prev: any) => any)
-      | Record<string, any>
+    const updaterOrUpdates = updatesOrTransactionId
 
     // Find owning client + current transaction row
     const clients = getClientStore()
     let ownerClientId: string | null = null
-    let currentRow: any = null
+    let currentRow: Record<string, unknown> | null = null
 
     for (const c of clients) {
       const txns = getTransactionsByClientId(c.id)
       const found = txns.find((t) => t.id === dealId)
       if (found) {
         ownerClientId = c.id
-        currentRow = found
+        currentRow = found as unknown as Record<string, unknown>
         break
       }
     }
@@ -105,13 +104,13 @@ export function updateDealTransaction(
       return
     }
 
-    const prevStatus: string | undefined = currentRow.status
+    const prevStatus: string | undefined = currentRow.status as string | undefined
     const updates =
       typeof updaterOrUpdates === 'function'
-        ? (updaterOrUpdates as (prev: any) => any)(currentRow)
-        : updaterOrUpdates
+        ? (updaterOrUpdates as (prev: Record<string, unknown>) => Record<string, unknown>)(currentRow)
+        : (updaterOrUpdates as Record<string, unknown>)
 
-    const nextStatus: string | undefined = (updates && updates.status) || prevStatus
+    const nextStatus: string | undefined = (updates && (updates.status as string)) || prevStatus
 
     updateTransaction(ownerClientId, dealId, updates)
 
@@ -121,7 +120,7 @@ export function updateDealTransaction(
         action: 'status_changed',
         entityType: 'deal',
         entityId: String(currentRow.dealId ?? dealId),
-        entityLabel: currentRow.propertyTitle ?? 'Deal',
+        entityLabel: (currentRow.propertyTitle as string) ?? 'Deal',
         details: `Deal ${currentRow.dealId ?? dealId}: ${prevStatus} → ${nextStatus}`,
       })
     }
@@ -131,7 +130,7 @@ export function updateDealTransaction(
 
   // Backwards-compatible API: updateDealTransaction(clientId, transactionId, updates)
   const clientId = dealIdOrClientId
-  const transactionId = updatesOrTransactionId
+  const transactionId = updatesOrTransactionId as string
   const updates = maybeUpdates
 
   const currentRow = getTransactionsByClientId(clientId).find((t) => t.id === transactionId)
@@ -140,7 +139,7 @@ export function updateDealTransaction(
   }
 
   const prevStatus: string | undefined = currentRow.status
-  const nextStatus: string | undefined = (updates && updates.status) || prevStatus
+  const nextStatus: string | undefined = (updates && (updates.status as string)) || prevStatus
 
   updateTransaction(clientId, transactionId, updates)
 

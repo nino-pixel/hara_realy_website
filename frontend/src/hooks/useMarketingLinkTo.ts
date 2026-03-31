@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { useLocation } from 'react-router-dom'
 import type { To } from 'react-router-dom'
 import { getMarketingAttribution } from '../utils/marketingAttribution'
 
@@ -9,7 +8,6 @@ import { getMarketingAttribution } from '../utils/marketingAttribution'
  * Relies on `getMarketingAttribution()` (current URL + session from first touch in this tab).
  */
 export function useMarketingLinkTo(pathname: string): To {
-  const location = useLocation()
   return useMemo(() => {
     const m = getMarketingAttribution()
     const p = new URLSearchParams()
@@ -19,7 +17,7 @@ export function useMarketingLinkTo(pathname: string): To {
     const q = p.toString()
     if (!q) return pathname
     return { pathname, search: `?${q}` }
-  }, [pathname, location.pathname, location.search])
+  }, [pathname])
 }
 
 /** Shorthand for the general inquiry page. */

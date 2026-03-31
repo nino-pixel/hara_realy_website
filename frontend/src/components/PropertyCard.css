@@ -123,6 +123,13 @@
   margin: 0 0 1rem; 
 }
 
+.property-card-meta-note {
+  font-size: 0.88rem;
+  color: var(--color-accent);
+  margin: -0.4rem 0 1rem;
+  line-height: 1.45;
+}
+
 .property-card-specs { 
   display: flex; 
   align-items: flex-end;

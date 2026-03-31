@@ -5,8 +5,6 @@ import {
   getActivityActionLabel,
   getActivityEntityLabel,
   type ActivityLogEntry,
-  type ActivityAction,
-  type ActivityEntityType,
 } from '../../data/activityLog'
 import './admin-common.css'
 import './ActivityLog.css'

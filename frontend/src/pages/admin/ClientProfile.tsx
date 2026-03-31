@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { HiOutlineArrowLeft, HiOutlineCash, HiOutlinePencil } from 'react-icons/hi'
 import {
@@ -26,11 +26,14 @@ export default function ClientProfile() {
   const [adminNotes, setAdminNotes] = useState('')
   const [savingNotes, setSavingNotes] = useState(false)
 
-  useEffect(() => {
+  // Sync: ensure client state matches id in URL
+  const [prevProfileId, setPrevProfileId] = useState(id)
+  if (id !== prevProfileId) {
+    setPrevProfileId(id)
     const c = id ? getClientById(id) : undefined
     setClient(c ?? null)
     setAdminNotes(c?.adminNotes ?? '')
-  }, [id])
+  }
 
   const handleSaveNotes = () => {
     if (!client) return

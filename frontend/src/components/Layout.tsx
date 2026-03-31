@@ -17,9 +17,12 @@ export default function Layout() {
   const { dark, toggle: toggleDark } = useDarkMode()
   useScrollTopOnRouteChange()
 
-  useEffect(() => {
-    setNavOpen(false)
-  }, [location.pathname, location.search])
+  // Sync: close nav on route change (including back button)
+  const [prevPath, setPrevPath] = useState(location.pathname + location.search)
+  if (location.pathname + location.search !== prevPath) {
+    setPrevPath(location.pathname + location.search)
+    if (navOpen) setNavOpen(false)
+  }
 
   useEffect(() => {
     if (!navOpen) return

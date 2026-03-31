@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { HiOutlineEye, HiOutlinePencil, HiOutlineArchive } from 'react-icons/hi'
 import Swal from 'sweetalert2'
@@ -22,6 +22,12 @@ import {
   deleteDealFromApi,
   deleteDealFromLocal,
 } from '../../services/dealsService'
+import {
+  fetchInquiries,
+  saveInquiryStore,
+  updateInquiryInApi,
+  type InquiryRecord,
+} from '../../services/inquiriesService'
 import './admin-common.css'
 import './Deals.css'
 
@@ -103,13 +109,20 @@ export default function AdminDeals() {
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
-  const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false)
-  const [cancelReason, setCancelReason] = useState('')
-  const [cancelReasonError, setCancelReasonError] = useState('')
   const [archiveModalDeal, setArchiveModalDeal] = useState<Deal | null>(null)
   const [archiveReason, setArchiveReason] = useState('')
   const [archiveError, setArchiveError] = useState('')
-  const [form, setForm] = useState({
+  const [cancelReasonError, setCancelReasonError] = useState('')
+  const clients = fetchActiveClientsForDeals()
+  const properties = fetchActivePropertiesForDeals()
+
+  // One-time initialization to hide loading spinner
+  const [hasMounted, setHasMounted] = useState(false)
+  if (!hasMounted) {
+    setHasMounted(true)
+    setLoading(false)
+  }
+  const [form, setForm] = useState(() => ({
     clientId: '',
     clientName: '',
     propertyId: '',
@@ -126,39 +139,37 @@ export default function AdminDeals() {
     firstPaymentType: '' as '' | 'reservation' | 'downpayment' | 'full_payment',
     firstPaymentAmount: '',
     firstPaymentDate: '',
-  })
+  }))
 
-  useEffect(() => {
-    setLoading(false)
-  }, [])
-
-  const clients = fetchActiveClientsForDeals()
-  const properties = fetchActivePropertiesForDeals()
-
-  useEffect(() => {
+  const [prevSearchTrigger, setPrevSearchTrigger] = useState('')
+  const currentSearchStr = searchParams.toString()
+  if (currentSearchStr !== prevSearchTrigger) {
+    setPrevSearchTrigger(currentSearchStr)
     const shouldOpenCreate = searchParams.get('createDeal') === '1'
-    if (!shouldOpenCreate || !clientIdFromUrl) return
-
-    const propertyIdFromUrl = searchParams.get('propertyId') ?? ''
-    const propertyTitleFromUrl = searchParams.get('propertyTitle') ?? ''
-    const clientNameFromUrl = searchParams.get('clientName') ?? ''
-    const leadOriginIdFromUrl = searchParams.get('leadOriginId')
-    const propsList = fetchActivePropertiesForDeals()
-    const prop = propertyIdFromUrl ? propsList.find((p) => p.id === propertyIdFromUrl) : undefined
-    const listPrice = prop?.price ?? ''
-    setShowAdd(true)
-    setEditingDeal(null)
-    setForm((prev) => ({
-      ...prev,
-      clientId: clientIdFromUrl,
-      clientName: clientNameFromUrl,
-      propertyId: propertyIdFromUrl,
-      propertyTitle: propertyTitleFromUrl || prop?.title || '',
-      leadOriginId: leadOriginIdFromUrl,
-      propertyPrice: listPrice || prev.propertyPrice,
-      finalSalePrice: listPrice || prev.finalSalePrice,
-    }))
-  }, [searchParams, clientIdFromUrl])
+    if (shouldOpenCreate && clientIdFromUrl) {
+      const propertyIdFromUrl = searchParams.get('propertyId') ?? ''
+      const propertyTitleFromUrl = searchParams.get('propertyTitle') ?? ''
+      const clientNameFromUrl = searchParams.get('clientName') ?? ''
+      const leadOriginIdFromUrl = searchParams.get('leadOriginId')
+      const propsList = fetchActivePropertiesForDeals()
+      const prop = propertyIdFromUrl ? propsList.find((p) => p.id === propertyIdFromUrl) : undefined
+      const listPrice = prop?.price ?? ''
+      setShowAdd(true)
+      setEditingDeal(null)
+      setForm((prev) => ({
+        ...prev,
+        clientId: clientIdFromUrl,
+        clientName: clientNameFromUrl,
+        propertyId: propertyIdFromUrl,
+        propertyTitle: propertyTitleFromUrl || prop?.title || '',
+        leadOriginId: leadOriginIdFromUrl,
+        propertyPrice: listPrice || prev.propertyPrice,
+        finalSalePrice: listPrice || prev.finalSalePrice,
+      }))
+    }
+  }
+  const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false)
+  const [cancelReason, setCancelReason] = useState('')
   const clientFromUrl = clientIdFromUrl ? clients.find((c) => c.id === clientIdFromUrl) : null
 
   const filtered = useMemo(() => {
@@ -178,7 +189,7 @@ export default function AdminDeals() {
     return [...list].sort((a, b) => dealTime(b) - dealTime(a))
   }, [deals, clientIdFromUrl, searchQuery])
 
-  const refreshDeals = () => setDeals(fetchDeals())
+  const refreshDeals = useCallback(() => setDeals(fetchDeals()), [])
 
   const openEdit = (d: Deal) => {
     setForm({
@@ -195,24 +206,24 @@ export default function AdminDeals() {
       closingDate: d.closingDate ?? '',
       expectedClosingDate: d.expectedClosingDate ?? '',
       adminNotes: d.adminNotes ?? '',
-      firstPaymentType: '' as '' | 'reservation' | 'downpayment' | 'full_payment',
+      firstPaymentType: '',
       firstPaymentAmount: '',
       firstPaymentDate: '',
     })
     setEditingDeal(d)
   }
 
-  const closeSidebar = () => {
+  const closeSidebar = useCallback(() => {
     setShowAdd(false)
     setEditingDeal(null)
-  }
+  }, [])
 
   const extractNumericAmount = (value: string): string => {
     const numeric = String(value ?? '').replace(/[^\d.]/g, '')
     return numeric
   }
 
-  const handleAddDeal = () => {
+  const handleAddDeal = useCallback(async () => {
     if (!form.clientId) {
       window.alert('Client is required before creating a deal.')
       return
@@ -265,7 +276,29 @@ export default function AdminDeals() {
         receipt: { status: 'pending' },
       },
       leadOriginId: clientLeadOriginId,
-    } as any)
+    } as Parameters<typeof createDealTransaction>[1])
+
+    if (clientLeadOriginId) {
+      const originInquiry = fetchInquiries().find((row) => row.id === clientLeadOriginId)
+      if (originInquiry) {
+        const rest = { ...originInquiry } as InquiryRecord & { assignedTo?: string | null }
+        delete rest.assignedTo
+        const convertedInquiry: InquiryRecord = {
+          ...rest,
+          status: 'converted',
+          linkedClientId: form.clientId,
+        }
+        saveInquiryStore((prev) =>
+          prev.map((row) => (row.id === clientLeadOriginId ? convertedInquiry : row))
+        )
+        try {
+          await updateInquiryInApi(convertedInquiry)
+        } catch {
+          /* deal is already created locally; inquiry DB sync can retry later */
+        }
+      }
+    }
+
     setForm({
       clientId: '',
       clientName: '',
@@ -286,7 +319,7 @@ export default function AdminDeals() {
     })
     setShowAdd(false)
     refreshDeals()
-  }
+  }, [clients, form, properties, refreshDeals, setForm, setShowAdd])
 
   const handleUpdateDeal = () => {
     if (!editingDeal) return
@@ -297,7 +330,6 @@ export default function AdminDeals() {
     if (form.status === 'Cancelled') {
       setShowCancelConfirmModal(true)
       setCancelReason('')
-      setCancelReasonError('')
       return
     }
     applyDealUpdate()
@@ -349,7 +381,6 @@ export default function AdminDeals() {
     applyDealUpdate(reason)
     setShowCancelConfirmModal(false)
     setCancelReason('')
-    setCancelReasonError('')
     closeSidebar()
     refreshDeals()
     setTimeout(() => {

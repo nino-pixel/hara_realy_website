@@ -236,28 +236,28 @@ function normalizeFollowUpDateOnly(value: string | null | undefined): string | n
 
 function normalizeInquiryDates(list: InquiryRecord[]): InquiryRecord[] {
   return list.map((lead, index) => {
-    const legacy = lead as InquiryRecord & { assignedTo?: string | null }
-    const { assignedTo: _omitAssigned, ...rest } = legacy
+    const rest = { ...lead } as InquiryRecord & { assignedTo?: string | null }
+    delete (rest as { assignedTo?: string | null }).assignedTo
     return {
-    ...rest,
-    createdAt: isValidIsoDate(rest.createdAt) ? new Date(rest.createdAt).toISOString() : fallbackIsoFromId(rest.id, index),
-    notes: rest.notes ?? '',
-    priority: rest.priority ?? 'medium',
-    lastContactedAt: normalizeOptionalDate(rest.lastContactedAt),
-    nextFollowUpAt: normalizeFollowUpDateOnly(rest.nextFollowUpAt),
-    lostReason: rest.lostReason ?? null,
-    linkedClientId: rest.linkedClientId ?? null,
-    estimatedMonthly: rest.estimatedMonthly ?? null,
-    downpayment: rest.downpayment ?? null,
-    loanTerm: rest.loanTerm ?? null,
-    interestRate: rest.interestRate ?? null,
-    downpaymentPercent: rest.downpaymentPercent ?? null,
-    highBuyingIntent: rest.highBuyingIntent ?? false,
-    budgetRange: rest.budgetRange ?? null,
-    buyingTimeline: rest.buyingTimeline ?? null,
-    financingMethod: rest.financingMethod ?? null,
-    employmentStatus: rest.employmentStatus ?? null,
-  }
+      ...rest,
+      createdAt: isValidIsoDate(rest.createdAt) ? new Date(rest.createdAt).toISOString() : fallbackIsoFromId(rest.id, index),
+      notes: rest.notes ?? '',
+      priority: rest.priority ?? 'medium',
+      lastContactedAt: normalizeOptionalDate(rest.lastContactedAt),
+      nextFollowUpAt: normalizeFollowUpDateOnly(rest.nextFollowUpAt),
+      lostReason: rest.lostReason ?? null,
+      linkedClientId: rest.linkedClientId ?? null,
+      estimatedMonthly: rest.estimatedMonthly ?? null,
+      downpayment: rest.downpayment ?? null,
+      loanTerm: rest.loanTerm ?? null,
+      interestRate: rest.interestRate ?? null,
+      downpaymentPercent: rest.downpaymentPercent ?? null,
+      highBuyingIntent: rest.highBuyingIntent ?? false,
+      budgetRange: rest.budgetRange ?? null,
+      buyingTimeline: rest.buyingTimeline ?? null,
+      financingMethod: rest.financingMethod ?? null,
+      employmentStatus: rest.employmentStatus ?? null,
+    }
   })
 }
 

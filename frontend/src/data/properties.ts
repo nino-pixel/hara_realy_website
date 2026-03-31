@@ -1,6 +1,7 @@
 import { resolveStorageUrl } from '../utils/mediaUrl'
 
-export type PropertyType = 'Condo' | 'House' | 'Lot' | 'Commercial'
+export const PROPERTY_TYPES = ['Condo', 'House', 'House & Lot', 'Lot', 'Commercial'] as const
+export type PropertyType = (typeof PROPERTY_TYPES)[number]
 /** Sales pipeline: Draft → Available → Reserved → Under Negotiation → Processing Docs → Sold | Cancelled | Archived */
 export type PropertyStatus =
   | 'draft'
@@ -96,6 +97,12 @@ export interface Property {
   updatedAt: string
   // Basic
   propertyCode?: string
+  isPropertyGroup?: boolean
+  parentPropertyId?: string | null
+  unitLabel?: string
+  phase?: string
+  block?: string
+  lot?: string
   developer?: string
   yearBuilt?: string
   // Location
@@ -406,4 +413,3 @@ export function getNextPropertyCode(): string {
   const nextNum = nums.length > 0 ? Math.max(...nums) + 1 : 1
   return `${prefix}${String(nextNum).padStart(6, '0')}`
 }
-

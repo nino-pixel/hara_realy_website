@@ -459,7 +459,8 @@ export function getClientStore(): ClientRecord[] {
 
 /** Strip legacy `assignedTo` from persisted snapshots. */
 function omitLegacyClientFields(row: ClientRecord & { assignedTo?: unknown }): ClientRecord {
-  const { assignedTo: _omit, ...rest } = row
+  const rest = { ...row }
+  delete (rest as { assignedTo?: unknown }).assignedTo
   return rest as ClientRecord
 }
 

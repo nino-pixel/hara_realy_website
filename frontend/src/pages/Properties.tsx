@@ -1,13 +1,13 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { trackEvent } from '../services/analyticsService'
-import { fetchProperties, isPropertyPublicListing } from '../services/propertiesService'
-import type { Property, PropertyStatus } from '../data/properties'
-import { parsePesoAmount } from '../data/deals'
 import PropertyCard from '../components/PropertyCard'
+import { parsePesoAmount } from '../data/deals'
+import { PROPERTY_TYPES, type PropertyStatus, type PropertyType } from '../data/properties'
+import { trackEvent } from '../services/analyticsService'
+import { fetchProperties } from '../services/propertiesService'
+import { getPublicPropertyCatalog } from '../utils/propertyGrouping'
 import './Properties.css'
 
-/** Public listing: exclude archived; "all" status omits draft/cancelled/archived for a sensible browse. */
 const CLIENT_STATUS_OPTIONS: Array<{ value: PropertyStatus | 'all'; label: string }> = [
   { value: 'all', label: 'All listings' },
   { value: 'available', label: 'Available' },
@@ -24,23 +24,25 @@ export default function Properties() {
   const initialSearch = searchParams.get('q') ?? ''
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState(initialSearch)
-  const [typeFilter, setTypeFilter] = useState<'all' | 'Condo' | 'House' | 'Lot' | 'Commercial'>('all')
-  /** Default "All listings" so the browse page shows every public-eligible property (not only Available). */
+  const [typeFilter, setTypeFilter] = useState<PropertyType | 'all'>('all')
   const [statusFilter, setStatusFilter] = useState<PropertyStatus | 'all'>('all')
   const [priceMin, setPriceMin] = useState('')
   const [priceMax, setPriceMax] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('newest')
 
-  const properties = fetchProperties()
+  const catalogItems = useMemo(() => getPublicPropertyCatalog(fetchProperties()), [])
+
+  // Sync: ensure search state matches URL ?q=
+  const qFromUrl = searchParams.get('q') ?? ''
+  const [prevQ, setPrevQ] = useState(qFromUrl)
+  if (qFromUrl !== prevQ) {
+    setPrevQ(qFromUrl)
+    setSearch(qFromUrl)
+  }
 
   useEffect(() => {
-    const q = searchParams.get('q') ?? ''
-    setSearch(q)
-  }, [searchParams])
-
-  useEffect(() => {
-    const t = window.setTimeout(() => setLoading(false), 120)
-    return () => window.clearTimeout(t)
+    const timer = window.setTimeout(() => setLoading(false), 120)
+    return () => window.clearTimeout(timer)
   }, [])
 
   useEffect(() => {
@@ -48,56 +50,73 @@ export default function Properties() {
   }, [loading])
 
   const filteredSorted = useMemo(() => {
-    let list: Property[] = properties.filter((p) => isPropertyPublicListing(p))
+    let list = catalogItems
 
     if (statusFilter === 'all') {
-      list = list.filter((p) => !['cancelled'].includes(p.status))
+      list = list.filter((item) => item.displayProperty.status !== 'cancelled')
     } else {
-      list = list.filter((p) => p.status === statusFilter)
+      list = list.filter(
+        (item) =>
+          item.displayProperty.status === statusFilter ||
+          item.publicUnits.some((unit) => unit.status === statusFilter)
+      )
     }
 
     if (typeFilter !== 'all') {
-      list = list.filter((p) => p.type === typeFilter)
+      list = list.filter((item) => item.displayProperty.type === typeFilter)
     }
 
     if (search.trim()) {
-      const q = search.trim().toLowerCase()
-      list = list.filter((p) => `${p.title} ${p.location} ${p.type}`.toLowerCase().includes(q))
+      const query = search.trim().toLowerCase()
+      list = list.filter((item) =>
+        [
+          item.displayProperty.title,
+          item.displayProperty.location,
+          item.displayProperty.type,
+          item.summaryNote,
+          ...item.publicUnits.map((unit) => unit.location),
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+          .includes(query)
+      )
     }
 
-    const minN = priceMin.trim() ? parsePesoAmount(priceMin) : null
-    const maxN = priceMax.trim() ? parsePesoAmount(priceMax) : null
-    if (minN != null || maxN != null) {
-      list = list.filter((p) => {
-        const n = parsePesoAmount(p.price)
-        if (n == null) return false
-        if (minN != null && n < minN) return false
-        if (maxN != null && n > maxN) return false
+    const minValue = priceMin.trim() ? parsePesoAmount(priceMin) : null
+    const maxValue = priceMax.trim() ? parsePesoAmount(priceMax) : null
+    if (minValue != null || maxValue != null) {
+      list = list.filter((item) => {
+        const value = parsePesoAmount(item.displayProperty.price)
+        if (value == null) return false
+        if (minValue != null && value < minValue) return false
+        if (maxValue != null && value > maxValue) return false
         return true
       })
     }
 
     const sorted = [...list]
     if (sortBy === 'newest') {
-      sorted.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      sorted.sort(
+        (a, b) =>
+          new Date(b.displayProperty.updatedAt).getTime() - new Date(a.displayProperty.updatedAt).getTime()
+      )
     } else if (sortBy === 'price-asc') {
-      sorted.sort((a, b) => {
-        const na = parsePesoAmount(a.price) ?? 0
-        const nb = parsePesoAmount(b.price) ?? 0
-        return na - nb
-      })
+      sorted.sort(
+        (a, b) =>
+          (parsePesoAmount(a.displayProperty.price) ?? 0) - (parsePesoAmount(b.displayProperty.price) ?? 0)
+      )
     } else {
-      sorted.sort((a, b) => {
-        const na = parsePesoAmount(a.price) ?? 0
-        const nb = parsePesoAmount(b.price) ?? 0
-        return nb - na
-      })
+      sorted.sort(
+        (a, b) =>
+          (parsePesoAmount(b.displayProperty.price) ?? 0) - (parsePesoAmount(a.displayProperty.price) ?? 0)
+      )
     }
 
     return sorted
-  }, [properties, typeFilter, search, statusFilter, priceMin, priceMax, sortBy])
+  }, [catalogItems, priceMax, priceMin, search, sortBy, statusFilter, typeFilter])
 
-  const syncQueryToUrl = (nextSearch: string) => {
+  function syncQueryToUrl(nextSearch: string) {
     const params = new URLSearchParams(searchParams)
     if (nextSearch.trim()) params.set('q', nextSearch.trim())
     else params.delete('q')
@@ -108,7 +127,7 @@ export default function Properties() {
     return (
       <div className="properties-page">
         <div className="container section">
-          <p className="client-page-loading">Loading properties…</p>
+          <p className="client-page-loading">Loading properties...</p>
         </div>
       </div>
     )
@@ -126,31 +145,30 @@ export default function Properties() {
               className="properties-filter-input"
               placeholder="Search by title, location, type..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(event) => setSearch(event.target.value)}
               onBlur={() => syncQueryToUrl(search)}
-              onKeyDown={(e) => e.key === 'Enter' && syncQueryToUrl(search)}
+              onKeyDown={(event) => event.key === 'Enter' && syncQueryToUrl(search)}
               aria-label="Search properties"
             />
             <select
               className="properties-filter-input"
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as 'all' | 'Condo' | 'House' | 'Lot' | 'Commercial')}
+              onChange={(event) => setTypeFilter(event.target.value as PropertyType | 'all')}
               aria-label="Filter property type"
             >
               <option value="all">All types</option>
-              <option value="Condo">Condo</option>
-              <option value="House">House</option>
-              <option value="Lot">Lot</option>
-              <option value="Commercial">Commercial</option>
+              {PROPERTY_TYPES.map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
             </select>
             <select
               className="properties-filter-input"
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as PropertyStatus | 'all')}
+              onChange={(event) => setStatusFilter(event.target.value as PropertyStatus | 'all')}
               aria-label="Filter status"
             >
-              {CLIENT_STATUS_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
+              {CLIENT_STATUS_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
             <input
@@ -158,7 +176,7 @@ export default function Properties() {
               className="properties-filter-input properties-filter-input--narrow"
               placeholder="Min price (e.g. 1000000)"
               value={priceMin}
-              onChange={(e) => setPriceMin(e.target.value)}
+              onChange={(event) => setPriceMin(event.target.value)}
               aria-label="Minimum price"
             />
             <input
@@ -166,13 +184,13 @@ export default function Properties() {
               className="properties-filter-input properties-filter-input--narrow"
               placeholder="Max price (e.g. 5000000)"
               value={priceMax}
-              onChange={(e) => setPriceMax(e.target.value)}
+              onChange={(event) => setPriceMax(event.target.value)}
               aria-label="Maximum price"
             />
             <select
               className="properties-filter-input"
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
+              onChange={(event) => setSortBy(event.target.value as SortOption)}
               aria-label="Sort properties"
             >
               <option value="newest">Newest updated</option>
@@ -188,9 +206,9 @@ export default function Properties() {
             <p className="properties-empty">No properties match your search. Try adjusting filters.</p>
           ) : (
             <div className="property-grid property-grid--browse" role="list">
-              {filteredSorted.map((p) => (
-                <div key={p.id} className="property-grid__cell" role="listitem">
-                  <PropertyCard property={p} />
+              {filteredSorted.map((item) => (
+                <div key={item.rootProperty.id} className="property-grid__cell" role="listitem">
+                  <PropertyCard property={item.displayProperty} metaNote={item.summaryNote} />
                 </div>
               ))}
             </div>

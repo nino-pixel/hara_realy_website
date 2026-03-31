@@ -90,7 +90,7 @@ export const TOOLS: Tool[] = [
           type: SchemaType.OBJECT,
           properties: {
             status: { type: SchemaType.STRING, description: 'Filter by property status: available, reserved, under_negotiation, processing_docs, sold, draft, cancelled' },
-            type: { type: SchemaType.STRING, description: 'Filter by type: Condo, House, Lot, Commercial' },
+            type: { type: SchemaType.STRING, description: 'Filter by type: Condo, House, House & Lot, Lot, Commercial' },
             search: { type: SchemaType.STRING, description: 'Search by property title (partial match)' },
             limit: { type: SchemaType.NUMBER, description: 'Max results to return (default 10)' },
           },
@@ -103,7 +103,7 @@ export const TOOLS: Tool[] = [
           type: SchemaType.OBJECT,
           properties: {
             title: { type: SchemaType.STRING, description: 'Property title (*Required)' },
-            type: { type: SchemaType.STRING, description: 'Property type: Condo, House, Lot, Commercial (*Required)' },
+            type: { type: SchemaType.STRING, description: 'Property type: Condo, House, House & Lot, Lot, Commercial (*Required)' },
             location: { type: SchemaType.STRING, description: 'Display location (e.g. "Angeles City, Pampanga") (*Required)' },
             price: { type: SchemaType.STRING, description: 'Listing price (e.g. "₱3,500,000") (*Required)' },
             status: { type: SchemaType.STRING, description: 'Initial status: draft (default), available' },

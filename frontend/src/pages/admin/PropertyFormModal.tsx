@@ -1,16 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
 import Swal from 'sweetalert2'
 import FormActions from '../../components/FormActions'
-import type { Property, PropertyType, PropertyStatus, PaymentOption, PriceHistoryEntry } from '../../data/properties'
-import { PROPERTY_STATUS_LABELS, PAYMENT_OPTION_LABELS } from '../../data/properties'
+import { PROPERTY_TYPES, PROPERTY_STATUS_LABELS, PAYMENT_OPTION_LABELS, type Property, type PropertyType, type PropertyStatus, type PaymentOption, type PriceHistoryEntry } from '../../data/properties'
 import type { PropertyImageUpload } from '../../services/propertiesApi'
-import { readPropertyAttachmentAsDataUrl } from '../../utils/fileDataUrl'
 import { optimizeImageForUpload, optimizeImageFiles } from '../../utils/imageUploadOptimize'
 import { resolveStorageUrl } from '../../utils/mediaUrl'
 import { formatPesoInputFromRaw } from '../../utils/mortgageUtils'
 import './AdminProperties.css'
-
-const PROPERTY_TYPES: PropertyType[] = ['Condo', 'House', 'Lot', 'Commercial']
 
 const PAYMENT_OPTIONS: PaymentOption[] = ['cash', 'bank_loan', 'in_house', 'installment']
 
@@ -22,6 +18,17 @@ const TABS = [
   { id: 'admin', label: 'Admin' },
 ] as const
 type TabId = (typeof TABS)[number]['id']
+type PropertyDocumentField = 'documentContract' | 'documentReservationForm' | 'documentTitleCopy'
+
+const PROPERTY_DOCUMENT_FIELDS: Array<{
+  key: PropertyDocumentField
+  label: string
+  attachedLabel: string
+}> = [
+  { key: 'documentContract', label: 'Contract', attachedLabel: 'Contract attached' },
+  { key: 'documentReservationForm', label: 'Reservation Form', attachedLabel: 'Reservation form attached' },
+  { key: 'documentTitleCopy', label: 'Title Copy', attachedLabel: 'Title copy attached' },
+]
 
 /** Parse price string (e.g. "₱5,000,000" or "200000") to number. */
 function parsePriceToNumber(s: string | undefined): number {
@@ -34,6 +41,7 @@ type Props = {
   form: Partial<Property>
   setForm: React.Dispatch<React.SetStateAction<Partial<Property>>>
   onSave: (upload: PropertyImageUpload) => void | Promise<void>
+  onAddUnit?: (() => void) | null
   onClose: () => void
   isEdit: boolean
   propertyCodeDisplay: string
@@ -47,6 +55,7 @@ export default function PropertyFormModal({
   form,
   setForm,
   onSave,
+  onAddUnit = null,
   onClose,
   isEdit,
   propertyCodeDisplay,
@@ -58,6 +67,11 @@ export default function PropertyFormModal({
   const [coverFile, setCoverFile] = useState<File | null>(null)
   const [galleryFiles, setGalleryFiles] = useState<File[]>([])
   const [floorPlanFile, setFloorPlanFile] = useState<File | null>(null)
+  const [documentFiles, setDocumentFiles] = useState<Record<PropertyDocumentField, File | null>>({
+    documentContract: null,
+    documentReservationForm: null,
+    documentTitleCopy: null,
+  })
 
   const coverPreviewUrl = useMemo(() => {
     if (!coverFile) return null
@@ -94,6 +108,9 @@ export default function PropertyFormModal({
 
   const update = (key: keyof Property, value: unknown) =>
     setForm((f) => ({ ...f, [key]: value }))
+
+  const setDocumentFile = (key: PropertyDocumentField, file: File | null) =>
+    setDocumentFiles((prev) => ({ ...prev, [key]: file }))
 
   const galleryUrlCount = (form.gallery ?? []).length
   const removeGalleryAt = (index: number) => {
@@ -152,6 +169,22 @@ export default function PropertyFormModal({
               <label>Property Code / ID</label>
               <input value={propertyCodeDisplay} readOnly className="admin-input--readonly" />
               <p className="form-field-hint">Format: CHR-YEAR-SEQUENCE (e.g. CHR-2026-000123). Auto-generated.</p>
+            </div>
+            <div className="admin-form-row admin-form-row--toggle">
+              <label className="form-toggle-label">
+                  <span className="form-toggle-row">
+                    <span className="form-toggle-wrap">
+                      <input
+                        type="checkbox"
+                      className="form-toggle-input"
+                      checked={form.isPropertyGroup === true}
+                      onChange={(e) => update('isPropertyGroup', e.target.checked)}
+                    />
+                    <span className="form-toggle-slider" />
+                  </span>
+                  <span className="form-toggle-text">Multiple units only</span>
+                </span>
+              </label>
             </div>
             <div className="admin-form-row">
               <label>Type</label>
@@ -494,15 +527,6 @@ export default function PropertyFormModal({
                     const file = e.target.files?.[0]
                     if (!file) return
                     const input = e.target
-                    if (file.size > 4 * 1024 * 1024) {
-                      Swal.fire({
-                        icon: 'error',
-                        title: 'File too large',
-                        text: 'Floor plan must be 4MB or smaller.',
-                      })
-                      input.value = ''
-                      return
-                    }
                     setFloorPlanFile(file)
                     update('floorPlan', undefined)
                     input.value = ''
@@ -881,126 +905,63 @@ export default function PropertyFormModal({
 
           <section className="property-form-section">
             <h3 className="property-form-section-title">Documents</h3>
-            <div className="admin-form-row">
-              <label>Contract</label>
-              <div className="file-input-wrap">
-                <span className="file-input-btn">
-                  <span className="file-input-icon">📄</span>
-                  {form.documentContract ? 'Change file…' : 'Choose file…'}
-                </span>
-                <input
-                  type="file"
-                  accept="image/*,application/pdf"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (!file) return
-                    const input = e.target
-                    void (async () => {
-                      try {
-                        const dataUrl = await readPropertyAttachmentAsDataUrl(file)
-                        update('documentContract', dataUrl)
-                      } catch (err) {
-                        Swal.fire({
-                          icon: 'error',
-                          title: 'Could not read file',
-                          text: err instanceof Error ? err.message : 'Try a smaller PDF or image.',
-                        })
-                      } finally {
-                        input.value = ''
-                      }
-                    })()
-                  }}
-                  className="file-input-hidden"
-                  aria-label="Contract"
-                />
-              </div>
-              {form.documentContract && (
-                <div className="property-form-file-preview">
-                  <span className="property-form-file-label">Contract attached</span>
-                  <button type="button" className="btn btn-sm btn-outline" onClick={() => update('documentContract', undefined)}>Remove</button>
+            {PROPERTY_DOCUMENT_FIELDS.map((field) => {
+              const currentValue = form[field.key]
+              const selectedFile = documentFiles[field.key]
+              const currentUrl =
+                typeof currentValue === 'string' && currentValue && !currentValue.startsWith('data:')
+                  ? resolveStorageUrl(currentValue)
+                  : ''
+
+              return (
+                <div key={field.key} className="admin-form-row">
+                  <label>{field.label}</label>
+                  <div className="file-input-wrap">
+                    <span className="file-input-btn">
+                      <span className="file-input-icon">📄</span>
+                      {(selectedFile || currentValue) ? 'Change file…' : 'Choose file…'}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        setDocumentFile(field.key, file)
+                        update(field.key, undefined)
+                        e.target.value = ''
+                      }}
+                      className="file-input-hidden"
+                      aria-label={field.label}
+                    />
+                  </div>
+                  {(selectedFile || currentValue) && (
+                    <div className="property-form-file-preview">
+                      <span className="property-form-file-label">
+                        {selectedFile ? selectedFile.name : field.attachedLabel}
+                      </span>
+                      {!selectedFile && currentUrl && (
+                        <p className="form-field-hint" style={{ marginTop: 8 }}>
+                          <a href={currentUrl} target="_blank" rel="noopener noreferrer">
+                            Open current file
+                          </a>
+                        </p>
+                      )}
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline"
+                        onClick={() => {
+                          setDocumentFile(field.key, null)
+                          update(field.key, undefined)
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            <div className="admin-form-row">
-              <label>Reservation Form</label>
-              <div className="file-input-wrap">
-                <span className="file-input-btn">
-                  <span className="file-input-icon">📄</span>
-                  {form.documentReservationForm ? 'Change file…' : 'Choose file…'}
-                </span>
-                <input
-                  type="file"
-                  accept="image/*,application/pdf"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (!file) return
-                    const input = e.target
-                    void (async () => {
-                      try {
-                        const dataUrl = await readPropertyAttachmentAsDataUrl(file)
-                        update('documentReservationForm', dataUrl)
-                      } catch (err) {
-                        Swal.fire({
-                          icon: 'error',
-                          title: 'Could not read file',
-                          text: err instanceof Error ? err.message : 'Try a smaller PDF or image.',
-                        })
-                      } finally {
-                        input.value = ''
-                      }
-                    })()
-                  }}
-                  className="file-input-hidden"
-                  aria-label="Reservation Form"
-                />
-              </div>
-              {form.documentReservationForm && (
-                <div className="property-form-file-preview">
-                  <span className="property-form-file-label">Reservation form attached</span>
-                  <button type="button" className="btn btn-sm btn-outline" onClick={() => update('documentReservationForm', undefined)}>Remove</button>
-                </div>
-              )}
-            </div>
-            <div className="admin-form-row">
-              <label>Title Copy</label>
-              <div className="file-input-wrap">
-                <span className="file-input-btn">
-                  <span className="file-input-icon">📄</span>
-                  {form.documentTitleCopy ? 'Change file…' : 'Choose file…'}
-                </span>
-                <input
-                  type="file"
-                  accept="image/*,application/pdf"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (!file) return
-                    const input = e.target
-                    void (async () => {
-                      try {
-                        const dataUrl = await readPropertyAttachmentAsDataUrl(file)
-                        update('documentTitleCopy', dataUrl)
-                      } catch (err) {
-                        Swal.fire({
-                          icon: 'error',
-                          title: 'Could not read file',
-                          text: err instanceof Error ? err.message : 'Try a smaller PDF or image.',
-                        })
-                      } finally {
-                        input.value = ''
-                      }
-                    })()
-                  }}
-                  className="file-input-hidden"
-                  aria-label="Title Copy"
-                />
-              </div>
-              {form.documentTitleCopy && (
-                <div className="property-form-file-preview">
-                  <span className="property-form-file-label">Title copy attached</span>
-                  <button type="button" className="btn btn-sm btn-outline" onClick={() => update('documentTitleCopy', undefined)}>Remove</button>
-                </div>
-              )}
-            </div>
+              )
+            })}
           </section>
           </>
           )}
@@ -1053,11 +1014,48 @@ export default function PropertyFormModal({
         )}
         <FormActions
           primaryLabel={isEdit ? 'Save' : 'Add Property'}
-          onPrimary={() => void onSave({ coverFile, galleryFiles, floorPlanFile })}
+          onPrimary={() =>
+            void onSave({
+              coverFile,
+              galleryFiles,
+              floorPlanFile,
+              documentContractFile: documentFiles.documentContract,
+              documentReservationFormFile: documentFiles.documentReservationForm,
+              documentTitleCopyFile: documentFiles.documentTitleCopy,
+            })
+          }
           onCancel={onClose}
           primaryDisabled={primaryDisabled}
           className="property-sidebar-footer"
-        />
+        >
+          <>
+            {isEdit && form.isPropertyGroup === true && typeof onAddUnit === 'function' ? (
+              <button type="button" className="btn btn-outline" onClick={onAddUnit}>
+                Add Unit
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() =>
+                void onSave({
+                  coverFile,
+                  galleryFiles,
+                  floorPlanFile,
+                  documentContractFile: documentFiles.documentContract,
+                  documentReservationFormFile: documentFiles.documentReservationForm,
+                  documentTitleCopyFile: documentFiles.documentTitleCopy,
+                })
+              }
+              disabled={primaryDisabled}
+            >
+              {isEdit ? 'Save' : 'Add Property'}
+            </button>
+            <button type="button" className="btn btn-outline" onClick={onClose}>
+              Cancel
+            </button>
+          </>
+        </FormActions>
       </div>
     </div>
   )

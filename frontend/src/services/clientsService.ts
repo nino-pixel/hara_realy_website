@@ -13,6 +13,7 @@ import { BULACAN_PROVINCE } from '../data/bulacanAddress'
 import type { InquiryRecord } from '../data/mockAdmin'
 import { logActivity, type ActivityLogEntry } from '../data/activityLog'
 import { fetchInquiries } from './inquiriesService'
+import { persistClientToApi } from './clientsApi'
 
 /**
  * Clients service — wraps the in-memory clients data store.
@@ -156,3 +157,36 @@ export function convertLeadToClient(lead: InquiryRecord): { clientId: string; cr
   return { clientId: createdId, created: true }
 }
 
+export async function convertLeadToClientAndPersist(
+  lead: InquiryRecord
+): Promise<{ clientId: string; created: boolean; client: ClientRecord }> {
+  const result = convertLeadToClient(lead)
+  const localClient = getClientStore().find((client) => client.id === result.clientId)
+
+  if (!localClient) {
+    throw new Error('Client conversion failed.')
+  }
+
+  const saved = await persistClientToApi(localClient)
+
+  saveClientStore((prev) =>
+    prev.map((client) =>
+      client.id === saved.id
+        ? {
+            ...client,
+            ...saved,
+          }
+        : client
+    )
+  )
+
+  const nextClient = getClientStore().find((client) => client.id === saved.id) ?? {
+    ...localClient,
+    ...saved,
+  }
+
+  return {
+    ...result,
+    client: nextClient,
+  }
+}

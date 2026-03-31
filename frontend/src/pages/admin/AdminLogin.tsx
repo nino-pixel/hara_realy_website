@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import PageTransition from '../../components/PageTransition'
-import { useAdminAuth } from '../../context/AdminAuth'
+import { useAdminAuth } from '../../hooks/useAdminAuth'
 import { useScrollTopOnRouteChange } from '../../hooks/useScrollTopOnRouteChange'
 import { logActivity } from '../../data/activityLog'
 import './AdminLogin.css'

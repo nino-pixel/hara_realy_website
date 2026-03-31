@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import { useAdminAuth } from '../context/AdminAuth'
+import { useAdminAuth } from '../hooks/useAdminAuth'
 
 /**
  * Guards `/admin/*` (except login): requires validated session via AdminAuthProvider

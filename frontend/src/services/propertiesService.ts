@@ -3,6 +3,7 @@ import {
   setPropertyStore,
   getNextPropertyCode,
   getPropertyById,
+  PROPERTY_TYPES,
   PROPERTY_STATUS_LABELS,
   getPropertyStatusDescription,
   isPropertyPublicListing,
@@ -22,6 +23,7 @@ import { logActivity, type ActivityLogEntry } from '../data/activityLog'
 
 export type { Property, PropertyStatus, PropertyType, ActivityLogEntry }
 export {
+  PROPERTY_TYPES,
   PROPERTY_STATUS_LABELS,
   getPropertyStatusDescription,
   getNextPropertyCode,
@@ -45,4 +47,3 @@ export function savePropertyStore(updater: (prev: Property[]) => Property[]): Pr
 export function logPropertyActivity(entry: Omit<ActivityLogEntry, 'id' | 'at'>) {
   return logActivity(entry)
 }
-

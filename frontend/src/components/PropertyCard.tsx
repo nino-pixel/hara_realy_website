@@ -1,23 +1,23 @@
 import { Link } from 'react-router-dom'
+import { MdOutlineBathtub, MdOutlineBed, MdOutlineSquareFoot } from 'react-icons/md'
+import { PROPERTY_STATUS_LABELS, type Property } from '../data/properties'
 import { useMarketingLinkTo } from '../hooks/useMarketingLinkTo'
-import type { Property } from '../data/properties'
-import { PROPERTY_STATUS_LABELS } from '../data/properties'
 import { resolveStorageUrl } from '../utils/mediaUrl'
 import SavePropertyButton from './SavePropertyButton'
 import './PropertyCard.css'
-import { MdOutlineBed, MdOutlineBathtub, MdOutlineSquareFoot } from 'react-icons/md'
 
 type Props = {
   property: Property
   featured?: boolean
-  /** Short label e.g. “Most inquired this week” — shown on image */
   contextPill?: string
+  metaNote?: string | null
 }
 
-export default function PropertyCard({ property, featured, contextPill }: Props) {
+export default function PropertyCard({ property, featured, contextPill, metaNote }: Props) {
   const { id, title, location, price, image, status, beds, baths, area } = property
   const label = PROPERTY_STATUS_LABELS[status]
   const detailTo = useMarketingLinkTo(`/properties/${id}`)
+
   return (
     <article className={`property-card ${featured ? 'property-card--featured' : ''}`}>
       <div className="property-card-image">
@@ -37,6 +37,7 @@ export default function PropertyCard({ property, featured, contextPill }: Props)
           <p className="property-card-price">{price}</p>
           <h3 className="property-card-title">{title}</h3>
           <p className="property-card-location">{location}</p>
+          {metaNote ? <p className="property-card-meta-note">{metaNote}</p> : null}
           {(beds > 0 || baths > 0 || area) && (
             <div className="property-card-specs">
               {beds > 0 && (
