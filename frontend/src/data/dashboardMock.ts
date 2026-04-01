@@ -18,61 +18,61 @@
  */
 
 export const MOCK_SUMMARY = {
-  totalClients: 24,
-  activeListings: 6,
-  newLeadsThisMonth: 12,
-  pendingInquiries: 5,
-  closedDeals: 2,
-  monthlySales: 6888000,
+  totalClients: 0,
+  activeListings: 0,
+  newLeadsThisMonth: 0,
+  pendingInquiries: 0,
+  closedDeals: 0,
+  monthlySales: 0,
 }
 
-/** Monthly sales = deal amount (transaction amount) per month, Jan–Dec. NOT property price — deals may have discounts, different closing price. */
+/** Monthly sales = deal amount (transaction amount) per month, Jan–Dec. */
 export const MOCK_MONTHLY_SALES = [
-  { month: 'Jan', total: 3500000 },
-  { month: 'Feb', total: 7800000 },
+  { month: 'Jan', total: 0 },
+  { month: 'Feb', total: 0 },
   { month: 'Mar', total: 0 },
-  { month: 'Apr', total: 4100000 },
-  { month: 'May', total: 2800000 },
-  { month: 'Jun', total: 5500000 },
-  { month: 'Jul', total: 4900000 },
-  { month: 'Aug', total: 5200000 },
-  { month: 'Sep', total: 6100000 },
-  { month: 'Oct', total: 4800000 },
-  { month: 'Nov', total: 7200000 },
-  { month: 'Dec', total: 6500000 },
+  { month: 'Apr', total: 0 },
+  { month: 'May', total: 0 },
+  { month: 'Jun', total: 0 },
+  { month: 'Jul', total: 0 },
+  { month: 'Aug', total: 0 },
+  { month: 'Sep', total: 0 },
+  { month: 'Oct', total: 0 },
+  { month: 'Nov', total: 0 },
+  { month: 'Dec', total: 0 },
 ]
 
 export const MOCK_CLIENT_SOURCE = [
-  { source: 'Facebook', count: 120 },
-  { source: 'Website', count: 80 },
-  { source: 'Walk-in', count: 45 },
-  { source: 'Referral', count: 40 },
+  { source: 'Facebook', count: 0 },
+  { source: 'Website', count: 0 },
+  { source: 'Walk-in', count: 0 },
+  { source: 'Referral', count: 0 },
 ]
 
 export const MOCK_PROPERTY_STATUS: { name: string; value: number; statusKey: string }[] = [
-  { name: 'Available', value: 4, statusKey: 'available' },
-  { name: 'Reserved', value: 1, statusKey: 'reserved' },
-  { name: 'Under Negotiation', value: 1, statusKey: 'under_negotiation' },
+  { name: 'Available', value: 0, statusKey: 'available' },
+  { name: 'Reserved', value: 0, statusKey: 'reserved' },
+  { name: 'Under Negotiation', value: 0, statusKey: 'under_negotiation' },
   { name: 'Processing Docs', value: 0, statusKey: 'processing_docs' },
-  { name: 'Sold', value: 2, statusKey: 'sold' },
-  { name: 'Draft', value: 1, statusKey: 'draft' },
+  { name: 'Sold', value: 0, statusKey: 'sold' },
+  { name: 'Draft', value: 0, statusKey: 'draft' },
   { name: 'Cancelled', value: 0, statusKey: 'cancelled' },
 ]
 
-/** Leads created per month, Jan–Dec. Count of new leads/inquiries created that month. Use for lead growth and marketing performance. */
+/** Leads created per month, Jan–Dec. */
 export const MOCK_INQUIRIES_PER_MONTH = [
-  { month: 'Jan', count: 20 },
-  { month: 'Feb', count: 15 },
-  { month: 'Mar', count: 28 },
-  { month: 'Apr', count: 22 },
-  { month: 'May', count: 18 },
-  { month: 'Jun', count: 25 },
-  { month: 'Jul', count: 19 },
-  { month: 'Aug', count: 24 },
-  { month: 'Sep', count: 21 },
-  { month: 'Oct', count: 26 },
-  { month: 'Nov', count: 23 },
-  { month: 'Dec', count: 17 },
+  { month: 'Jan', count: 0 },
+  { month: 'Feb', count: 0 },
+  { month: 'Mar', count: 0 },
+  { month: 'Apr', count: 0 },
+  { month: 'May', count: 0 },
+  { month: 'Jun', count: 0 },
+  { month: 'Jul', count: 0 },
+  { month: 'Aug', count: 0 },
+  { month: 'Sep', count: 0 },
+  { month: 'Oct', count: 0 },
+  { month: 'Nov', count: 0 },
+  { month: 'Dec', count: 0 },
 ]
 
 export interface RecentActivityRow {
@@ -83,11 +83,5 @@ export interface RecentActivityRow {
 }
 
 /** Last 5 system activities — property added, lead created, saved, deal closed, status changed. */
-export const MOCK_RECENT_ACTIVITY: RecentActivityRow[] = [
-  { activity: 'Maria added property "Solana Heights"', date: 'Feb 12, 2026', activityType: 'property_added' },
-  { activity: 'Lead created from website', date: 'Feb 11, 2026', activityType: 'lead_created' },
-  { activity: 'Client Roberto saved property', date: 'Feb 11, 2026', activityType: 'property_saved' },
-  { activity: 'Deal closed for Greenfield Residence', date: 'Feb 10, 2026', activityType: 'deal_closed' },
-  { activity: 'Property status changed to Sold', date: 'Feb 10, 2026', activityType: 'property_status_changed' },
-]
+export const MOCK_RECENT_ACTIVITY: RecentActivityRow[] = []
 

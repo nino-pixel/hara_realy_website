@@ -10,6 +10,16 @@ use Illuminate\Http\Request;
 
 class DealController extends Controller
 {
+    public function index(): JsonResponse
+    {
+        $deals = Deal::all();
+        $data = $deals->map(fn ($d) => $this->toFrontendShape($d));
+
+        return ApiResponse::success([
+            'data' => $data,
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([

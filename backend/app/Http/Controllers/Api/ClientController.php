@@ -11,6 +11,16 @@ use Illuminate\Validation\Rule;
 
 class ClientController extends Controller
 {
+    public function index(): JsonResponse
+    {
+        $clients = Client::all();
+        $data = $clients->map(fn ($c) => $this->toFrontendShape($c));
+
+        return ApiResponse::success([
+            'data' => $data,
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $municipalities = config('bulacan.municipalities', []);

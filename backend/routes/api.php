@@ -51,9 +51,11 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::put('/inquiries/{id}', [InquiryController::class, 'update']);
     Route::delete('/inquiries/{id}', [InquiryController::class, 'destroy']);
 
+    Route::get('/clients', [ClientController::class, 'index']);
     Route::post('/clients', [ClientController::class, 'store']);
     Route::delete('/clients/{id}', [ClientController::class, 'destroy']);
 
+    Route::get('/deals', [DealController::class, 'index']);
     Route::post('/deals', [DealController::class, 'store']);
     Route::delete('/deals/{id}', [DealController::class, 'destroy']);
 

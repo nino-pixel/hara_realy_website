@@ -20,41 +20,7 @@ export interface Client {
   history: { date: string; note: string }[]
 }
 
-export const MOCK_CLIENTS: Client[] = [
-  {
-    id: 'c1',
-    name: 'Roberto Garcia',
-    email: 'roberto.g@email.com',
-    phone: '09171234567',
-    status: 'active',
-    createdAt: '2026-02-01',
-    history: [
-      { date: '2026-02-10', note: 'Viewed Greenfield Residence' },
-      { date: '2026-02-05', note: 'Inquiry received, replied' },
-    ],
-  },
-  {
-    id: 'c2',
-    name: 'Sandra Lim',
-    email: 'sandra.lim@email.com',
-    phone: '09187654321',
-    status: 'new',
-    createdAt: '2026-02-11',
-    history: [{ date: '2026-02-11', note: 'Submitted inquiry for Solana Heights' }],
-  },
-  {
-    id: 'c3',
-    name: 'Carlos Mendoza',
-    email: 'carlos.m@email.com',
-    phone: '09199887766',
-    status: 'closed',
-    createdAt: '2026-01-15',
-    history: [
-      { date: '2026-02-01', note: 'Deal closed - Casa Verde' },
-      { date: '2026-01-20', note: 'Site visit scheduled' },
-    ],
-  },
-]
+export const MOCK_CLIENTS: Client[] = []
 
 export type InquiryStatus = 'new' | 'contacted' | 'qualified' | 'converted' | 'lost'
 export type LeadPriority = 'low' | 'medium' | 'high'
@@ -102,109 +68,7 @@ export interface InquiryRecord {
   employmentStatus?: string | null
 }
 
-export const MOCK_INQUIRIES: InquiryRecord[] = [
-  {
-    id: 'i1',
-    name: 'Sandra Lim',
-    email: 'sandra.lim@email.com',
-    phone: '09187654321',
-    propertyId: '1',
-    propertyTitle: 'Solana Heights — Unit 4A',
-    message: 'Interested in this property. What are the payment terms?',
-    notes: '',
-    status: 'new',
-    priority: 'medium',
-    createdAt: '2026-02-11T14:30:00',
-    lastContactedAt: null,
-    nextFollowUpAt: null,
-    lostReason: null,
-    source_auto: 'facebook',
-    source_manual: null,
-    utm_campaign: 'promo_march',
-    utm_medium: 'social',
-  },
-  {
-    id: 'i2',
-    name: 'Pedro Cruz',
-    email: 'pedro.c@email.com',
-    phone: '09171223344',
-    propertyId: '4',
-    propertyTitle: 'Greenfield Residence',
-    message: 'Is this still available? Can we schedule a viewing?',
-    notes: '',
-    status: 'contacted',
-    priority: 'high',
-    createdAt: '2026-02-10T09:15:00',
-    lastContactedAt: '2026-02-10T10:00:00Z',
-    nextFollowUpAt: '2026-02-15',
-    lostReason: null,
-    source_auto: null,
-    source_manual: 'referral',
-    utm_campaign: null,
-    utm_medium: null,
-  },
-  {
-    id: 'i3',
-    name: 'Carlos Mendoza',
-    email: 'carlos.m@email.com',
-    phone: '09199887766',
-    propertyId: '6',
-    propertyTitle: 'Talanai Homes — Apitong',
-    message: 'Can you confirm the availability and total contract price?',
-    notes: '',
-    status: 'qualified',
-    priority: 'medium',
-    createdAt: '2026-02-09T11:10:00',
-    lastContactedAt: '2026-02-09T12:30:00Z',
-    nextFollowUpAt: '2026-02-14',
-    lostReason: null,
-    source_auto: null,
-    source_manual: 'website',
-    utm_campaign: 'lead_qualification',
-    utm_medium: 'web',
-  },
-  {
-    id: 'i4',
-    name: 'Elena Reyes',
-    email: 'elena.r@email.com',
-    phone: '09181234567',
-    propertyId: '2',
-    propertyTitle: 'The Arcadia — Aberdeen',
-    message: 'Ready to proceed with reservation and payment instructions.',
-    notes: '',
-    status: 'converted',
-    priority: 'high',
-    linkedClientId: 'c7',
-    createdAt: '2026-02-08T16:45:00',
-    lastContactedAt: '2026-02-08T17:05:00Z',
-    nextFollowUpAt: null,
-    lostReason: null,
-    source_auto: 'facebook',
-    source_manual: null,
-    utm_campaign: null,
-    utm_medium: null,
-  },
-  {
-    id: 'i5',
-    name: 'Roberto Garcia',
-    email: 'roberto.g@email.com',
-    phone: '09171234567',
-    propertyId: '3',
-    propertyTitle: 'Solana Heights — Unit 4A',
-    message: 'Client went with another developer. Please close as lost.',
-    notes: 'Lost after final comparison with competitor pricing.',
-    status: 'lost',
-    priority: 'low',
-    createdAt: '2026-02-06T10:05:00',
-    lastContactedAt: '2026-02-06T11:20:00Z',
-    nextFollowUpAt: null,
-    lostReason: 'Chose another developer',
-    source_auto: null,
-    source_manual: 'referral',
-    utm_campaign: null,
-    utm_medium: null,
-  },
-]
+export const MOCK_INQUIRIES: InquiryRecord[] = []
 
 function isValidIsoDate(value: string | null | undefined): boolean {
   if (!value) return false

@@ -3,10 +3,12 @@
  * Does not remove localStorage; keeps SPA working when API is down.
  */
 import type { Property } from '../data/properties'
-import type { InquiryRecord } from '../data/mockAdmin'
 import { setPropertyStore } from '../data/properties'
+import type { InquiryRecord } from '../data/mockAdmin'
 import { setInquiryStore } from '../data/mockAdmin'
+import { setClientStore, replaceTransactionsStore } from '../data/clientsData'
 import { SIMULATION_STORAGE_KEY, persistSimulationSnapshot } from '../data/simulationSnapshot'
+import { normalizeClientFromApi } from './clientsApi'
 import { apiGet, apiPost } from './api'
 import { getAuthToken } from './authStore'
 import { getApiBaseUrl } from './apiConfig'
@@ -60,7 +62,6 @@ export async function runApiBootstrap(): Promise<void> {
   try {
     const propsRes = await apiGet<{ success?: boolean; data?: Property[] }>('/properties')
     const list = propsRes?.data
-    /** Replace store whenever the API returns an array (including empty), so we mirror the database. */
     if (Array.isArray(list)) {
       setPropertyStore(() => list)
       touched = true
@@ -71,12 +72,43 @@ export async function runApiBootstrap(): Promise<void> {
 
   try {
     const inqRes = await apiGet<{ data: InquiryRecord[] }>('/inquiries')
-    if (Array.isArray(inqRes.data) && inqRes.data.length > 0) {
+    if (Array.isArray(inqRes.data)) {
       setInquiryStore(() => inqRes.data)
       touched = true
     }
   } catch {
     /* keep local */
+  }
+
+  try {
+    const clientsRes = await apiGet<{ data: Record<string, unknown>[] }>('/clients')
+    if (Array.isArray(clientsRes.data)) {
+      const normalized = clientsRes.data.map((c: any) => normalizeClientFromApi(c))
+      setClientStore(() => normalized)
+      touched = true
+    }
+  } catch {
+    /* ignore */
+  }
+
+  try {
+    /** 
+     * Deals/Transactions from DB. 
+     * Note: backend uses 'deals' table; sync logic assumes transactionsByClient map.
+     */
+    const dealsRes = await apiGet<{ data: any[] }>('/deals')
+    if (Array.isArray(dealsRes.data)) {
+      const map: Record<string, any[]> = {}
+      dealsRes.data.forEach((d: any) => {
+        const cid = d.clientId
+        if (!map[cid]) map[cid] = []
+        map[cid].push(d)
+      })
+      replaceTransactionsStore(map)
+      touched = true
+    }
+  } catch {
+    /* ignore */
   }
 
   if (touched) {
