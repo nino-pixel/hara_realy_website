@@ -6,7 +6,6 @@ import {
   HiOutlineMenu, 
   HiMoon, 
   HiSun, 
-  HiOutlineSparkles,
   HiOutlineViewGrid,
   HiOutlineUsers,
   HiOutlineHome,
@@ -22,7 +21,7 @@ import { useDarkMode } from '../../hooks/useDarkMode'
 import Swal from 'sweetalert2'
 import PageTransition from '../../components/PageTransition'
 import { useScrollTopOnRouteChange } from '../../hooks/useScrollTopOnRouteChange'
-import faviconLogo from '../../assets/favicon.png'
+import FloatingAiAssistant from '../../components/FloatingAiAssistant'
 import './AdminLayout.css'
 
 export default function AdminLayout() {
@@ -116,7 +115,7 @@ export default function AdminLayout() {
           <div className="admin-sidebar-brand-row">
             <Link to="/admin/dashboard" className="admin-sidebar-brand-text">
               <img
-                src={faviconLogo}
+                src="/favicon.png"
                 alt=""
                 className="admin-sidebar-brand-icon"
                 width={44}
@@ -139,9 +138,6 @@ export default function AdminLayout() {
         <nav className="admin-sidebar-nav">
           <NavLink to="/admin/dashboard">
             <HiOutlineViewGrid className="nav-icon" /> <span>Dashboard</span>
-          </NavLink>
-          <NavLink to="/admin/assistant" className="admin-sidebar-nav-ai">
-            <HiOutlineSparkles className="nav-ai-icon" /> <span>AI Assistant</span>
           </NavLink>
           <NavLink to="/admin/clients">
             <HiOutlineUsers className="nav-icon" /> <span>Clients</span>
@@ -203,6 +199,7 @@ export default function AdminLayout() {
           </PageTransition>
         </AnimatePresence>
       </main>
+      <FloatingAiAssistant />
     </div>
   )
 }

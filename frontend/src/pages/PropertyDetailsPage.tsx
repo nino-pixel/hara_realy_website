@@ -495,12 +495,20 @@ export default function PropertyDetailsPage() {
             </div>
 
             <div className="property-details-specs-grid">
-              {rootProperty.beds > 0 && <PropertySpecCard icon={<MdOutlineBed />} value={rootProperty.beds} label="Bedrooms" />}
-              {rootProperty.baths > 0 && <PropertySpecCard icon={<MdOutlineBathtub />} value={rootProperty.baths} label="Bathrooms" />}
-              {rootProperty.area && <PropertySpecCard icon={<MdOutlineSquareFoot />} value={rootProperty.area} label="Area" />}
-              {rootProperty.yearBuilt && <PropertySpecCard icon={<HiOutlineCalendar />} value={rootProperty.yearBuilt} label="Year Built" />}
-              {rootProperty.parking != null && rootProperty.parking > 0 && (
-                <PropertySpecCard icon={<MdOutlineDirectionsCar />} value={rootProperty.parking} label="Parking" />
+              {(selectedUnit?.beds ?? rootProperty.beds) > 0 && (
+                <PropertySpecCard icon={<MdOutlineBed />} value={selectedUnit?.beds ?? rootProperty.beds} label="Bedrooms" />
+              )}
+              {(selectedUnit?.baths ?? rootProperty.baths) > 0 && (
+                <PropertySpecCard icon={<MdOutlineBathtub />} value={selectedUnit?.baths ?? rootProperty.baths} label="Bathrooms" />
+              )}
+              {(selectedUnit?.area ?? rootProperty.area) && (
+                <PropertySpecCard icon={<MdOutlineSquareFoot />} value={selectedUnit?.area ?? rootProperty.area} label="Area" />
+              )}
+              {rootProperty.yearBuilt && (
+                <PropertySpecCard icon={<HiOutlineCalendar />} value={rootProperty.yearBuilt} label="Year Built" />
+              )}
+              {(selectedUnit?.parking ?? rootProperty.parking ?? 0) > 0 && (
+                <PropertySpecCard icon={<MdOutlineDirectionsCar />} value={selectedUnit?.parking ?? rootProperty.parking ?? 0} label="Parking" />
               )}
             </div>
             {rootProperty.publicDescription && (
@@ -574,6 +582,13 @@ export default function PropertyDetailsPage() {
               <section className="property-details-block" aria-labelledby="pd-facts">
                 <h2 id="pd-facts" className="property-details-block-title">Key details</h2>
                 <dl className="property-details-facts">
+                  {selectedUnit ? (
+                    <>
+                      <Fact label="Phase" value={selectedUnit.phase} />
+                      <Fact label="Block" value={selectedUnit.block} />
+                      <Fact label="Lot" value={selectedUnit.lot} />
+                    </>
+                  ) : null}
                   <Fact label="City" value={rootProperty.city} />
                   <Fact label="Province" value={rootProperty.province} />
                   <Fact label="Furnished" value={rootProperty.furnished === true ? 'Yes' : rootProperty.furnished === false ? 'No' : null} />

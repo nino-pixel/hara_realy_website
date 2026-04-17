@@ -103,14 +103,73 @@ export default function PropertyUnitFormModal({
                 placeholder="Street or landmark"
               />
             </div>
+          </section>
+          
+          <section className="property-form-section">
+            <h3 className="property-form-section-title">Unit Details</h3>
+            <div className="admin-form-inline-row">
+              <div className="admin-form-row">
+                <label>Floor Area</label>
+                <input
+                  className="admin-input"
+                  value={form.floorArea ?? form.area ?? ''}
+                  onChange={(event) => update('floorArea', event.target.value)}
+                  placeholder="e.g. 95 sqm"
+                />
+              </div>
+              <div className="admin-form-row">
+                <label>Lot Area</label>
+                <input
+                  className="admin-input"
+                  value={form.lotArea ?? ''}
+                  onChange={(event) => update('lotArea', event.target.value)}
+                  placeholder="e.g. 120 sqm"
+                />
+              </div>
+            </div>
+            <div className="admin-form-inline-row">
+              <div className="admin-form-row">
+                <label>Bedrooms</label>
+                <input
+                  className="admin-input"
+                  type="number"
+                  min={0}
+                  value={form.beds ?? ''}
+                  onChange={(event) => update('beds', parseInt(event.target.value, 10) || 0)}
+                />
+              </div>
+              <div className="admin-form-row">
+                <label>Bathrooms</label>
+                <input
+                  className="admin-input"
+                  type="number"
+                  min={0}
+                  value={form.baths ?? ''}
+                  onChange={(event) => update('baths', parseInt(event.target.value, 10) || 0)}
+                />
+              </div>
+              <div className="admin-form-row">
+                <label>Parking</label>
+                <input
+                  className="admin-input"
+                  type="number"
+                  min={0}
+                  value={form.parking ?? ''}
+                  onChange={(event) => update('parking', parseInt(event.target.value, 10) || 0)}
+                />
+              </div>
+            </div>
             <div className="admin-form-row">
-              <label>Location (display line)</label>
-              <input
+              <label>Furnished?</label>
+              <select
                 className="admin-input"
-                value={form.location ?? ''}
-                onChange={(event) => update('location', event.target.value)}
-                placeholder="e.g. Phase 1, Block 3, Lot 12"
-              />
+                value={form.furnished === true ? 'yes' : form.furnished === false ? 'no' : ''}
+                onChange={(event) => update('furnished', event.target.value === 'yes')}
+              >
+                <option value="">—</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
             </div>
           </section>
 

@@ -45,6 +45,10 @@ class PropertyController extends Controller
             return ApiResponse::failure('Not found.', 404);
         }
 
+        // Mark the archived flag so any consumer checking the boolean sees it archived,
+        // then soft-delete so ArchivesController::index() can find it via onlyTrashed().
+        $p->archived = true;
+        $p->save();
         $p->delete();
 
         return ApiResponse::success([
@@ -169,11 +173,14 @@ class PropertyController extends Controller
     private function storeFromMultipart(Request $request): JsonResponse
     {
         $request->validate([
-            'property' => 'required|json',
-            'cover' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
-            'gallery' => 'nullable|array',
-            'gallery.*' => 'image|mimes:jpeg,jpg,png,webp|max:2048',
-            'floorPlan' => 'nullable|file|mimes:jpeg,jpg,png,webp,pdf|max:4096',
+            'property'                  => 'required|json',
+            'cover'                     => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
+            'gallery'                   => 'nullable|array',
+            'gallery.*'                 => 'image|mimes:jpeg,jpg,png,webp|max:2048',
+            'floorPlan'                 => 'nullable|file|mimes:jpeg,jpg,png,webp,pdf|max:4096',
+            'documentContract'          => 'nullable|file|mimes:jpeg,jpg,png,webp,pdf|max:8192',
+            'documentReservationForm'   => 'nullable|file|mimes:jpeg,jpg,png,webp,pdf|max:8192',
+            'documentTitleCopy'         => 'nullable|file|mimes:jpeg,jpg,png,webp,pdf|max:8192',
         ]);
 
         $data = json_decode($request->input('property'), true);
@@ -186,6 +193,15 @@ class PropertyController extends Controller
         if ($request->hasFile('floorPlan')) {
             unset($data['floorPlan']);
         }
+        if ($request->hasFile('documentContract')) {
+            unset($data['documentContract']);
+        }
+        if ($request->hasFile('documentReservationForm')) {
+            unset($data['documentReservationForm']);
+        }
+        if ($request->hasFile('documentTitleCopy')) {
+            unset($data['documentTitleCopy']);
+        }
 
         $this->assertFloorPlanNotBase64(isset($data['floorPlan']) && is_string($data['floorPlan']) ? $data['floorPlan'] : null);
 
@@ -194,6 +210,21 @@ class PropertyController extends Controller
         if ($request->hasFile('floorPlan')) {
             $path = $request->file('floorPlan')->store('properties/floorplans', $disk);
             $data['floorPlan'] = $this->relativePublicStorageUrl($path);
+        }
+
+        if ($request->hasFile('documentContract')) {
+            $path = $request->file('documentContract')->store('properties/documents', $disk);
+            $data['documentContract'] = $this->relativePublicStorageUrl($path);
+        }
+
+        if ($request->hasFile('documentReservationForm')) {
+            $path = $request->file('documentReservationForm')->store('properties/documents', $disk);
+            $data['documentReservationForm'] = $this->relativePublicStorageUrl($path);
+        }
+
+        if ($request->hasFile('documentTitleCopy')) {
+            $path = $request->file('documentTitleCopy')->store('properties/documents', $disk);
+            $data['documentTitleCopy'] = $this->relativePublicStorageUrl($path);
         }
 
         if ($request->hasFile('cover')) {
@@ -223,7 +254,7 @@ class PropertyController extends Controller
             [
                 'title' => $data['title'],
                 'location' => $data['location'],
-                'price' => $data['price'],
+                'price' => $data['price'] ?? null,
                 'type' => $data['type'],
                 'status' => $data['status'],
                 'beds' => $data['beds'] ?? 0,
@@ -250,7 +281,7 @@ class PropertyController extends Controller
             'id' => 'required|string|max:64',
             'title' => 'required|string|max:500',
             'location' => 'required|string|max:500',
-            'price' => 'required|string|max:100',
+            'price' => 'nullable|string|max:100',
             'type' => 'required|string|max:64',
             'status' => 'required|string|max:64',
             'beds' => 'nullable|integer|min:0|max:100',
@@ -272,7 +303,7 @@ class PropertyController extends Controller
             [
                 'title' => $validated['title'],
                 'location' => $validated['location'],
-                'price' => $validated['price'],
+                'price' => $validated['price'] ?? null,
                 'type' => $validated['type'],
                 'status' => $validated['status'],
                 'beds' => $validated['beds'] ?? 0,
@@ -297,7 +328,7 @@ class PropertyController extends Controller
             'id' => 'required|string|max:64',
             'title' => 'required|string|max:500',
             'location' => 'required|string|max:500',
-            'price' => 'required|string|max:100',
+            'price' => 'nullable|string|max:100',
             'type' => 'required|string|max:64',
             'status' => 'required|string|max:64',
             'beds' => 'nullable|integer|min:0|max:100',

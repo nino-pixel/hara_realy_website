@@ -67,6 +67,60 @@ export function getPublicGalleryUrls(p: Property): string[] {
   })
 }
 
+// ─── Payment Schemes (flexible, multi-developer) ─────────────────────────────
+
+/** How a line item computes its peso value. */
+export type PaymentLineItemType = 'fixed' | 'percent' | 'subtotal' | 'installment'
+
+/**
+ * One row in a payment computation sheet.
+ * - fixed      : admin enters a fixed ₱ amount (negative = deduction)
+ * - percent    : admin enters %, applied to the most-recent subtotal above it
+ * - subtotal   : auto-sum of all items since the previous subtotal (or start)
+ * - installment: admin enters total ₱ + months → monthly = total / months
+ */
+export interface PaymentLineItem {
+  id: string
+  label: string
+  type: PaymentLineItemType
+  /** ₱ for 'fixed' / 'installment'; decimal fraction for 'percent' (0.10 = 10%). */
+  value: number
+  /** Only for 'installment' — number of months. */
+  termMonths?: number
+  /** Small note displayed to the right (e.g. "** Special Discount"). */
+  note?: string
+}
+
+/** One row in the financing terms table (bank, Pag-IBIG, in-house, etc.). */
+export interface FinancingTerm {
+  id: string
+  institution: string
+  termYears: number
+  ratePercent: number
+  /**
+   * If set, overrides the PMT auto-calculation.
+   * Useful when the developer's sheet has rounding differences.
+   */
+  monthlyAmort?: number
+  /** Required buyer net income / month (optional guideline). */
+  requiredIncome?: number
+  /** e.g. "BPI MayBahay only", "with PDC" etc. */
+  note?: string
+}
+
+/**
+ * One named payment option (e.g. "10% DP – Pag-IBIG (18 mos.)").
+ * A property can have multiple schemes, one per financing strategy.
+ */
+export interface PaymentScheme {
+  id: string
+  label: string
+  promoNotes?: string
+  lineItems: PaymentLineItem[]
+  financingTerms: FinancingTerm[]
+}
+
+// ─── Legacy payment option tags ──────────────────────────────────────────────
 export type PaymentOption = 'cash' | 'bank_loan' | 'in_house' | 'installment'
 
 export const PAYMENT_OPTION_LABELS: Record<PaymentOption, string> = {
@@ -158,6 +212,8 @@ export interface Property {
   archived?: boolean
   archivedAt?: string
   archiveReason?: string
+  // Payment schemes (multi-developer, flexible line items)
+  paymentSchemes?: PaymentScheme[]
 }
 
 const TITLE_TYPE_PUBLIC_LABELS: Record<'TCT' | 'CCT', string> = {

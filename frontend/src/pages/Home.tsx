@@ -11,6 +11,9 @@ import { fetchClients } from '../services/clientsService'
 import { fetchProperties, type Property } from '../services/propertiesService'
 import { getPublicPropertyCatalog, type PropertyCatalogItem } from '../utils/propertyGrouping'
 import PropertyCard from '../components/PropertyCard'
+import { TestimonialsSection } from '../components/ui/testimonial-v2'
+import Footer from '../components/Footer'
+import { useFullPageScroll } from '../hooks/useFullPageScroll'
 import './Home.css'
 
 /** Hero background slideshow — stock homes / interiors (replace with branded assets anytime). */
@@ -38,71 +41,6 @@ const HERO_SLIDES: { src: string; alt: string }[] = [
 ]
 
 const HERO_SLIDE_MS = 6000
-
-/** Placeholder client feedback for the home trust strip (replace with API data later). */
-const HOME_TESTIMONIALS: { id: string; name: string; location: string; quote: string }[] = [
-  {
-    id: 't1',
-    name: 'Maria R.',
-    location: 'San Fernando, Pampanga',
-    quote:
-      'Clear numbers from day one. We never felt rushed, and they helped us compare two developments side by side.',
-  },
-  {
-    id: 't2',
-    name: 'Jon D.',
-    location: 'Malolos, Bulacan',
-    quote:
-      'I was skeptical about pre-selling, but the site visits and paperwork were explained in plain language.',
-  },
-  {
-    id: 't3',
-    name: 'Angela T.',
-    location: 'Angeles City',
-    quote:
-      'They matched us with a unit that fit our monthly budget, not just the list price. Huge relief.',
-  },
-  {
-    id: 't4',
-    name: 'Rico M.',
-    location: 'Mabalacat',
-    quote:
-      'Responsive on chat and email. We had a lot of questions as first-time buyers and they stuck with us.',
-  },
-  {
-    id: 't5',
-    name: 'Liza K.',
-    location: 'Baliuag, Bulacan',
-    quote:
-      'From inquiry to reservation, every step had a checklist. Made a stressful process feel manageable.',
-  },
-  {
-    id: 't6',
-    name: 'Paolo S.',
-    location: 'Clark area',
-    quote:
-      'Honest about what was still under construction versus ready for occupancy. No surprises at turnover.',
-  },
-]
-
-function HomeTestimonialCard({ t }: { t: (typeof HOME_TESTIMONIALS)[0] }) {
-  return (
-    <article className="home-testimonial-card">
-      <div className="home-testimonial-stars" aria-label="5 out of 5 stars">
-        {Array.from({ length: 5 }, (_, i) => (
-          <span key={i} className="home-testimonial-star" aria-hidden>
-            ★
-          </span>
-        ))}
-      </div>
-      <p className="home-testimonial-quote">&ldquo;{t.quote}&rdquo;</p>
-      <p className="home-testimonial-meta">
-        <span className="home-testimonial-name">{t.name}</span>
-        <span className="home-testimonial-loc">{t.location}</span>
-      </p>
-    </article>
-  )
-}
 
 function parsePriceDigits(price: string): number {
   const n = parseInt(String(price).replace(/[^\d]/g, ''), 10)
@@ -195,10 +133,14 @@ export default function Home() {
   const inquiryTo = useInquiryLink()
   const propertiesTo = useMarketingLinkTo('/properties')
   const homeRootRef = useRef<HTMLDivElement>(null)
+  const featuredPanelRef = useRef<HTMLDivElement>(null)
   const [now] = useState(() => Date.now())
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [heroSlide, setHeroSlide] = useState(0)
+
+  // Integrate our fullpage scroll engine: 4 total sections.
+  const { activeIndex } = useFullPageScroll(4, featuredPanelRef, 2)
 
   useEffect(() => {
     const t = window.setTimeout(() => setLoading(false), 120)
@@ -219,12 +161,6 @@ export default function Home() {
   useEffect(() => {
     if (!loading) trackEvent('page_view', { page: 'home' })
   }, [loading])
-
-  /** Full-page vertical scroll snap (CSS on html — see Home.css). */
-  useEffect(() => {
-    document.documentElement.classList.add('home-scroll-snap')
-    return () => document.documentElement.classList.remove('home-scroll-snap')
-  }, [])
 
   /** Global mouse glow tracker for the spotlight effect */
   useEffect(() => {
@@ -403,9 +339,14 @@ export default function Home() {
   }
 
   return (
-    <div className="home home--scroll-snap" ref={homeRootRef}>
+    <div className="home home--scroll-snap home-fullpage-viewport" ref={homeRootRef}>
       <div className="home-mouse-glow" aria-hidden />
-      <section className="hero hero--has-slideshow home-snap-section">
+
+      <div 
+        className="home-fullpage-wrapper"
+        style={{ transform: `translate3d(0, calc(-${activeIndex} * (100dvh - 4rem)), 0)` }}
+      >
+        <section className="hero hero--has-slideshow home-snap-section">
         {heroSlideshow}
         <div className="container hero-inner home-snap-reveal">
           <h1 className="hero-title">Find Homes You Can Actually Afford</h1>
@@ -484,22 +425,7 @@ export default function Home() {
             </div>
           </section>
 
-          <div className="home-testimonials" aria-label="Client feedback">
-            <div className="home-testimonials-marquee">
-              <div className="home-testimonials-track">
-                <div className="home-testimonials-group">
-                  {HOME_TESTIMONIALS.map((t) => (
-                    <HomeTestimonialCard key={t.id} t={t} />
-                  ))}
-                </div>
-                <div className="home-testimonials-group" aria-hidden="true">
-                  {HOME_TESTIMONIALS.map((t) => (
-                    <HomeTestimonialCard key={`marquee-dup-${t.id}`} t={t} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          <TestimonialsSection />
 
           <div className="home-trust-lower">
             <div className="home-trust-lower-band">
@@ -532,15 +458,14 @@ export default function Home() {
       </div>
 
       {/* Snap panel 3: featured + CTA */}
-      <div className="home-snap-panel home-snap-section home-snap-panel--featured">
+      <div 
+        className="home-snap-panel home-snap-section home-snap-panel--featured"
+        ref={featuredPanelRef}
+      >
         <div className="home-snap-reveal">
           <section className="featured section">
             <div className="container">
               <h2 className="section-title">Featured Properties</h2>
-              <p className="section-subtitle">
-                Highlights from local demand—labels use recent activity on this site (views, saves, inquiries) plus
-                freshness and value.
-              </p>
               {featured.length === 0 ? (
                 <p className="featured-empty">
                   No featured listings right now. Browse all properties to see what’s available.
@@ -565,17 +490,37 @@ export default function Home() {
               </div>
             </div>
           </section>
+        </div>
+      </div>
 
-          <section className="cta-section">
-            <div className="container">
+      {/* Snap panel 4: CTA + Footer */}
+      <div 
+        className="home-snap-panel home-snap-section home-snap-panel--footer"
+        style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          minHeight: 'calc(100dvh - 4rem)',
+          height: 'calc(100dvh - 4rem)',
+          overflowY: 'auto',
+          msOverflowStyle: 'none',
+          scrollbarWidth: 'none'
+        }}
+      >
+        <div style={{ flex: '1 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+          <section className="cta-section" style={{ width: '100%', padding: '5rem 0' }}>
+            <div className="container" style={{ textAlign: 'center' }}>
               <h2 className="cta-title">Tell us your budget, and we’ll find the best options for you</h2>
-              <p className="cta-text">No pressure. Share what you can afford and we’ll match you with homes that fit.</p>
+              <p className="cta-text" style={{ margin: '0 auto 2.5rem', opacity: 0.9 }}>No pressure. Share what you can afford and we’ll match you with homes that fit.</p>
               <Link to={inquiryTo} className="btn btn-primary btn-lg">
                 Get matched now
               </Link>
             </div>
           </section>
         </div>
+        <div style={{ flexShrink: 0 }}>
+          <Footer />
+        </div>
+      </div>
       </div>
     </div>
   )

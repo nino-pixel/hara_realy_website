@@ -1,64 +1,71 @@
+@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
   /* Core palette: Elegant neutral greys, ultra-dark charcoals, and a soft, expensive gold/champagne accent */
-  --color-bg: #f8f9fa; 
+  --color-bg: #f8f9fa;
   --color-bg-alt: #ffffff;
   --color-surface: #ffffff;
-  
+
   /* Deep, sophisticated dark tones for contrast */
-  --color-hero: #111111; 
+  --color-hero: #111111;
   --color-hero-muted: #1f1f1f;
-  
+
   /* Premium Accent (Champagne Gold) */
-  --color-accent: #c19b6c; 
+  --color-accent: #c19b6c;
   --color-accent-hover: #b58c5c;
-  
+
   /* Sidebar */
   --color-sidebar: #111111;
   --color-sidebar-muted: #1f1f1f;
-  
+
   /* Text */
   --color-text: #1a1a1a;
   --color-text-muted: #6b7280;
-  
+
   /* Borders */
-  --color-border: rgba(0, 0, 0, 0.08); 
-  
+  --color-border: rgba(0, 0, 0, 0.08);
+
   /* Typography */
   --font-sans: 'Outfit', system-ui, -apple-system, sans-serif;
   --font-serif: 'Outfit', system-ui, -apple-system, sans-serif;
-  
+
   /* Premium Shadows & Depth */
   --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.03);
   --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.1);
   --shadow-glow: 0 0 20px rgba(193, 155, 108, 0.3);
-  
+
   /* Glassmorphism Variables */
   --glass-bg: rgba(255, 255, 255, 0.75);
   --glass-bg-dark: rgba(17, 17, 17, 0.6);
   --glass-border: 1px solid rgba(255, 255, 255, 0.4);
   --glass-border-dark: 1px solid rgba(255, 255, 255, 0.1);
   --glass-blur: blur(16px);
-  
+
   --radius: 12px;
   --radius-lg: 24px;
   --container: 1140px;
-  
+
   /* Buttery smooth transitions */
   --ease: cubic-bezier(0.25, 1, 0.5, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --duration: 0.4s;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
+
 html {
   scroll-behavior: smooth;
-  font-size: 15px; /* slightly larger for readability */
-  overflow-x: clip; /* clip instead of hidden so scroll-snap doesn't break */
+  font-size: 15px;
+  /* slightly larger for readability */
+  overflow-x: clip;
+  /* clip instead of hidden so scroll-snap doesn't break */
   width: 100%;
 }
+
 body {
   margin: 0;
   font-family: var(--font-sans);
@@ -71,64 +78,78 @@ body {
   overflow-x: hidden;
   width: 100%;
 }
+
 #root {
   min-height: 100vh;
   width: 100%;
   overflow-x: hidden;
   min-width: 0;
 }
-h1, h2, h3, h4 { 
-  font-family: var(--font-sans); 
-  font-weight: 600; 
-  line-height: 1.15; 
-  letter-spacing: -0.02em; 
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
 }
-a { 
-  color: var(--color-accent); 
-  text-decoration: none; 
-  transition: color var(--duration) var(--ease); 
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: color var(--duration) var(--ease);
 }
-a:hover { 
-  color: var(--color-accent-hover); 
-  text-decoration: none; 
+
+a:hover {
+  color: var(--color-accent-hover);
+  text-decoration: none;
 }
-.container { 
-  width: 100%; 
-  max-width: var(--container); 
-  margin: 0 auto; 
-  padding: 0 1.5rem; 
+
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 1.5rem;
 }
-.section-title { 
-  font-size: clamp(2rem, 4vw, 3rem); 
-  margin: 0 0 1rem; 
-  color: var(--color-text); 
+
+.section-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  margin: 0 0 1rem;
+  color: var(--color-text);
   letter-spacing: -0.03em;
 }
-.section-subtitle { 
-  font-size: 1.125rem; 
-  color: var(--color-text-muted); 
-  margin: 0 0 2rem; 
+
+.section-subtitle {
+  font-size: 1.125rem;
+  color: var(--color-text-muted);
+  margin: 0 0 2rem;
   max-width: 600px;
 }
+
 .page-hero {
   background: linear-gradient(135deg, var(--color-hero) 0%, var(--color-hero-muted) 100%);
   color: #fff;
   padding: 4rem 0;
   text-align: center;
 }
-.page-title { 
-  font-size: clamp(2.5rem, 5vw, 4rem); 
-  margin: 0 0 0.5rem; 
-  color: #fff; 
+
+.page-title {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  margin: 0 0 0.5rem;
+  color: #fff;
   letter-spacing: -0.03em;
 }
-.page-subtitle { 
-  margin: 0 auto; 
-  opacity: 0.8; 
-  font-size: 1.25rem; 
+
+.page-subtitle {
+  margin: 0 auto;
+  opacity: 0.8;
+  font-size: 1.25rem;
   font-weight: 300;
   max-width: 600px;
 }
+
 /* ── Universal Glass & Live Colors Button Design ── */
 .btn {
   display: inline-flex;
@@ -138,21 +159,22 @@ a:hover {
   font-family: var(--font-sans);
   font-weight: 600;
   font-size: 1rem;
-  
+
   /* The Glass Pill */
-  border-radius: 9999px; /* Complete pill shape like the reference image */
+  border-radius: 9999px;
+  /* Complete pill shape like the reference image */
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, 0.8);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
   color: var(--color-text);
-  
+
   cursor: pointer;
   text-decoration: none;
   transition: all var(--duration) var(--ease);
   letter-spacing: 0.01em;
-  
+
   /* Preparation for live colors */
   position: relative;
   overflow: hidden;
@@ -176,17 +198,23 @@ a:hover {
   height: 250px;
   border-radius: 50%;
   z-index: -1;
-  background: conic-gradient(
-    from 0deg,
-    #ff7eb3, /* pink */
-    #8b5cf6, /* purple */
-    #3b82f6, /* blue */
-    #2dd4bf, /* teal */
-    #fcd34d, /* yellow */
-    #ff7eb3  /* back to pink for seamless loop */
-  );
+  background: conic-gradient(from 0deg,
+      #ff7eb3,
+      /* pink */
+      #8b5cf6,
+      /* purple */
+      #3b82f6,
+      /* blue */
+      #2dd4bf,
+      /* teal */
+      #fcd34d,
+      /* yellow */
+      #ff7eb3
+      /* back to pink for seamless loop */
+    );
   filter: blur(24px);
-  opacity: 0; /* Hidden by default */
+  opacity: 0;
+  /* Hidden by default */
   animation: btn-live-colors 4s linear infinite;
   pointer-events: none;
   /* The slow transition on top/left creates the fluid water dragging effect */
@@ -210,41 +238,49 @@ a:hover {
 /* On hover, outer glowing drop-shadow & lift */
 .btn:hover {
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 12px 24px rgba(139, 92, 246, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 1);
   border-color: rgba(255, 255, 255, 1);
 }
 
 [data-theme="dark"] .btn:hover {
-  box-shadow: 
+  box-shadow:
     0 12px 24px rgba(139, 92, 246, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
   border-color: rgba(255, 255, 255, 0.3);
 }
 
-.btn:active { 
-  transform: scale(0.96) translateY(0); 
+.btn:active {
+  transform: scale(0.96) translateY(0);
 }
 
 @keyframes btn-live-colors {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Base button variants are no longer needed for color since they all share the live color glassmorphism, 
    but we'll keep the classes for sizing/specifics */
-.btn-lg { 
-  padding: 0.85rem 2.25rem; 
-  font-size: 1.125rem; 
+.btn-lg {
+  padding: 0.85rem 2.25rem;
+  font-size: 1.125rem;
 }
+
 .btn-outline {
   /* Still glass, but maybe less opacity for outline feel */
   background: rgba(255, 255, 255, 0.2);
 }
+
 [data-theme="dark"] .btn-outline {
   background: rgba(0, 0, 0, 0.2);
 }
+
 .btn-outline:hover {
   background: rgba(255, 255, 255, 0.4);
 }
@@ -308,6 +344,7 @@ a:hover {
   border-color: var(--color-border);
   box-shadow: var(--shadow-sm);
 }
+
 [data-theme="dark"] .admin-table-wrap {
   background: rgba(255, 255, 255, 0.03);
   border-color: rgba(255, 255, 255, 0.07);
@@ -325,12 +362,10 @@ a:hover {
   left: -75%;
   width: 50%;
   height: 200%;
-  background: linear-gradient(
-    105deg,
-    transparent 40%,
-    rgba(255, 255, 255, 0.4) 50%,
-    transparent 60%
-  );
+  background: linear-gradient(105deg,
+      transparent 40%,
+      rgba(255, 255, 255, 0.4) 50%,
+      transparent 60%);
   transform: skewX(-20deg);
   animation: card-shine 6s ease-in-out infinite;
   pointer-events: none;
@@ -341,29 +376,55 @@ a:hover {
 [data-theme="dark"] .property-card::after,
 [data-theme="dark"] .dashboard-card::after,
 [data-theme="dark"] .dashboard-chart-wrap::after {
-  background: linear-gradient(
-    105deg,
-    transparent 40%,
-    rgba(255, 255, 255, 0.07) 50%,
-    transparent 60%
-  );
+  background: linear-gradient(105deg,
+      transparent 40%,
+      rgba(255, 255, 255, 0.07) 50%,
+      transparent 60%);
 }
 
 /* Stagger shine animation so not all cards animate at once */
 .home-testimonial-card:nth-child(2)::after,
-.dashboard-card:nth-child(2)::after { animation-delay: -1.5s; }
+.dashboard-card:nth-child(2)::after {
+  animation-delay: -1.5s;
+}
+
 .home-testimonial-card:nth-child(3)::after,
-.dashboard-card:nth-child(3)::after { animation-delay: -3s; }
+.dashboard-card:nth-child(3)::after {
+  animation-delay: -3s;
+}
+
 .home-testimonial-card:nth-child(4)::after,
-.dashboard-card:nth-child(4)::after { animation-delay: -4.5s; }
-.dashboard-card:nth-child(5)::after { animation-delay: -2s; }
-.dashboard-card:nth-child(6)::after { animation-delay: -3.5s; }
+.dashboard-card:nth-child(4)::after {
+  animation-delay: -4.5s;
+}
+
+.dashboard-card:nth-child(5)::after {
+  animation-delay: -2s;
+}
+
+.dashboard-card:nth-child(6)::after {
+  animation-delay: -3.5s;
+}
 
 @keyframes card-shine {
-  0%   { left: -75%; opacity: 0; }
-  10%  { opacity: 1; }
-  40%  { left: 130%; opacity: 0; }
-  100% { left: 130%; opacity: 0; }
+  0% {
+    left: -75%;
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  40% {
+    left: 130%;
+    opacity: 0;
+  }
+
+  100% {
+    left: 130%;
+    opacity: 0;
+  }
 }
 
 /* Hover: slightly brighter glass on card hover */
@@ -385,26 +446,67 @@ a:hover {
 }
 
 /* Colour-coded dashboard stat cards — tinted glass versions */
-[data-theme="dark"] .dashboard-card--blue  { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.25); }
-[data-theme="dark"] .dashboard-card--green { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.25); }
-[data-theme="dark"] .dashboard-card--teal  { background: rgba(20, 184, 166, 0.1); border-color: rgba(20, 184, 166, 0.25); }
-[data-theme="dark"] .dashboard-card--yellow{ background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.25); }
-[data-theme="dark"] .dashboard-card--red   { background: rgba(220, 38, 38, 0.1);  border-color: rgba(220, 38, 38, 0.25); }
-[data-theme="dark"] .dashboard-card--purple{ background: rgba(139, 92, 246, 0.1); border-color: rgba(139, 92, 246, 0.25); }
+[data-theme="dark"] .dashboard-card--blue {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+[data-theme="dark"] .dashboard-card--green {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+[data-theme="dark"] .dashboard-card--teal {
+  background: rgba(20, 184, 166, 0.1);
+  border-color: rgba(20, 184, 166, 0.25);
+}
+
+[data-theme="dark"] .dashboard-card--yellow {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+[data-theme="dark"] .dashboard-card--red {
+  background: rgba(220, 38, 38, 0.1);
+  border-color: rgba(220, 38, 38, 0.25);
+}
+
+[data-theme="dark"] .dashboard-card--purple {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: rgba(139, 92, 246, 0.25);
+}
 
 /* Stat value colours stay vivid */
-[data-theme="dark"] .dashboard-card--blue  .admin-stat-value { color: #93c5fd; }
-[data-theme="dark"] .dashboard-card--green .admin-stat-value { color: #6ee7b7; }
-[data-theme="dark"] .dashboard-card--teal  .admin-stat-value { color: #5eead4; }
-[data-theme="dark"] .dashboard-card--yellow .admin-stat-value { color: #fcd34d; }
-[data-theme="dark"] .dashboard-card--red   .admin-stat-value { color: #fca5a5; }
-[data-theme="dark"] .dashboard-card--purple .admin-stat-value { color: #c4b5fd; }
+[data-theme="dark"] .dashboard-card--blue .admin-stat-value {
+  color: #93c5fd;
+}
+
+[data-theme="dark"] .dashboard-card--green .admin-stat-value {
+  color: #6ee7b7;
+}
+
+[data-theme="dark"] .dashboard-card--teal .admin-stat-value {
+  color: #5eead4;
+}
+
+[data-theme="dark"] .dashboard-card--yellow .admin-stat-value {
+  color: #fcd34d;
+}
+
+[data-theme="dark"] .dashboard-card--red .admin-stat-value {
+  color: #fca5a5;
+}
+
+[data-theme="dark"] .dashboard-card--purple .admin-stat-value {
+  color: #c4b5fd;
+}
 
 /* Other dark overrides */
 [data-theme="dark"] .home-trust {
-  background: rgba(255,255,255,0.02);
-  border-color: rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.06);
 }
+
 [data-theme="dark"] .page-hero {
   background: linear-gradient(135deg, #050505, #111);
 }
@@ -412,18 +514,24 @@ a:hover {
 /* Tooltip dark */
 [data-theme="dark"] .recharts-default-tooltip {
   background: rgba(20, 20, 20, 0.9) !important;
-  border-color: rgba(255,255,255,0.1) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
   backdrop-filter: blur(12px);
 }
 
 /* Smooth colour transitions across theme switch */
-body, .header, .property-card, .home-testimonial-card,
-.dashboard-card, .dashboard-chart-wrap, .admin-table-wrap {
+body,
+.header,
+.property-card,
+.home-testimonial-card,
+.dashboard-card,
+.dashboard-chart-wrap,
+.admin-table-wrap {
   transition: background-color 0.4s ease, color 0.4s ease,
-              border-color 0.4s ease, box-shadow 0.4s ease;
+    border-color 0.4s ease, box-shadow 0.4s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   [data-theme="dark"] .home-testimonial-card::after,
   [data-theme="dark"] .property-card::after,
   [data-theme="dark"] .dashboard-card::after,
@@ -446,12 +554,14 @@ body, .header, .property-card, .home-testimonial-card,
 ::-webkit-scrollbar-thumb {
   background-color: rgba(150, 150, 150, 0.3);
   border-radius: 10px;
-  border: 3px solid var(--color-bg); /* Creates a transparent floating cushion */
+  border: 3px solid var(--color-bg);
+  /* Creates a transparent floating cushion */
   background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-accent); /* Lights up with the premium accent color on hover */
+  background-color: var(--color-accent);
+  /* Lights up with the premium accent color on hover */
 }
 
 /* Dark mode scrollbars */
@@ -468,9 +578,11 @@ body, .header, .property-card, .home-testimonial-card,
   scrollbar-width: thin;
   scrollbar-color: rgba(150, 150, 150, 0.3) var(--color-bg);
 }
+
 [data-theme="dark"] * {
   scrollbar-color: rgba(255, 255, 255, 0.2) var(--color-bg);
 }
+
 /* --- Premium Custom Checkboxes --- */
 input[type="checkbox"]:not(.form-toggle-input) {
   appearance: none;
@@ -509,8 +621,15 @@ input[type="checkbox"]:not(.form-toggle-input):checked::after {
 }
 
 @keyframes checkbox-check {
-  from { opacity: 0; transform: translate(-50%, -70%) rotate(-45deg) scale(0.5); }
-  to { opacity: 1; transform: translate(-50%, -70%) rotate(-45deg) scale(1); }
+  from {
+    opacity: 0;
+    transform: translate(-50%, -70%) rotate(-45deg) scale(0.5);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -70%) rotate(-45deg) scale(1);
+  }
 }
 
 input[type="checkbox"]:not(.form-toggle-input):hover {
@@ -543,7 +662,7 @@ input[type="checkbox"]:not(.form-toggle-input):active {
   position: absolute;
   inset: 0;
   background: var(--color-border);
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: 30px;
   transition: all 0.3s var(--ease);
   cursor: pointer;
@@ -558,22 +677,22 @@ input[type="checkbox"]:not(.form-toggle-input):active {
   top: 2px;
   background: #fff;
   border-radius: 50%;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
   transition: all 0.3s var(--ease);
   z-index: 2;
 }
 
-.form-toggle-input:checked + .form-toggle-slider {
+.form-toggle-input:checked+.form-toggle-slider {
   background: var(--color-accent);
   border-color: var(--color-accent-hover);
   box-shadow: 0 0 15px rgba(193, 155, 108, 0.25);
 }
 
-.form-toggle-input:checked + .form-toggle-slider::before {
+.form-toggle-input:checked+.form-toggle-slider::before {
   transform: translateX(22px);
 }
 
-.form-toggle-input:focus-visible + .form-toggle-slider {
+.form-toggle-input:focus-visible+.form-toggle-slider {
   box-shadow: 0 0 0 3px rgba(193, 155, 108, 0.3);
 }
 
@@ -590,5 +709,5 @@ input[type="checkbox"]:not(.form-toggle-input):active {
 
 [data-theme="dark"] .form-toggle-slider::before {
   background: #eee;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }

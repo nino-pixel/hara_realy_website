@@ -70,45 +70,46 @@ export async function runApiBootstrap(): Promise<void> {
     /* keep local */
   }
 
-  try {
-    const inqRes = await apiGet<{ data: InquiryRecord[] }>('/inquiries')
-    if (Array.isArray(inqRes.data)) {
-      setInquiryStore(() => inqRes.data)
-      touched = true
+  if (getAuthToken()) {
+    try {
+      const inqRes = await apiGet<{ data: InquiryRecord[] }>('/inquiries')
+      if (Array.isArray(inqRes.data)) {
+        setInquiryStore(() => inqRes.data)
+        touched = true
+      }
+    } catch {
+      /* keep local */
     }
-  } catch {
-    /* keep local */
-  }
 
-  try {
-    const clientsRes = await apiGet<{ data: Record<string, unknown>[] }>('/clients')
-    if (Array.isArray(clientsRes.data)) {
-      const normalized = clientsRes.data.map((c: any) => normalizeClientFromApi(c))
-      setClientStore(() => normalized)
-      touched = true
+    try {
+      const clientsRes = await apiGet<{ data: Record<string, unknown>[] }>('/clients')
+      if (Array.isArray(clientsRes.data)) {
+        const normalized = clientsRes.data.map((c: Record<string, unknown>) => normalizeClientFromApi(c))
+        setClientStore(() => normalized)
+        touched = true
+      }
+    } catch {
+      /* ignore */
     }
-  } catch {
-    /* ignore */
-  }
 
-  try {
-    /** 
-     * Deals/Transactions from DB. 
-     * Note: backend uses 'deals' table; sync logic assumes transactionsByClient map.
-     */
-    const dealsRes = await apiGet<{ data: any[] }>('/deals')
-    if (Array.isArray(dealsRes.data)) {
-      const map: Record<string, any[]> = {}
-      dealsRes.data.forEach((d: any) => {
-        const cid = d.clientId
-        if (!map[cid]) map[cid] = []
-        map[cid].push(d)
-      })
-      replaceTransactionsStore(map)
-      touched = true
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const dealsRes = await apiGet<{ data: any[] }>('/deals')
+      if (Array.isArray(dealsRes.data)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const map: Record<string, any[]> = {}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        dealsRes.data.forEach((d: any) => {
+          const cid = d.clientId
+          if (!map[cid]) map[cid] = []
+          map[cid].push(d)
+        })
+        replaceTransactionsStore(map)
+        touched = true
+      }
+    } catch {
+      /* ignore */
     }
-  } catch {
-    /* ignore */
   }
 
   if (touched) {

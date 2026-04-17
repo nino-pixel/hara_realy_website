@@ -26,7 +26,6 @@ import Inquiries from './pages/admin/Inquiries'
 import ActivityLog from './pages/admin/ActivityLog'
 import Reports from './pages/admin/Reports'
 import AdminArchives from './pages/admin/AdminArchives'
-import AiAssistant from './pages/admin/AiAssistant'
 import Preloader from './components/Preloader'
 
 export default function App() {
@@ -82,7 +81,6 @@ export default function App() {
             <Route path="reports" element={<Reports />} />
             <Route path="archives" element={<AdminArchives />} />
             <Route path="users" element={<AdminUsers />} />
-            <Route path="assistant" element={<AiAssistant />} />
           </Route>
         </Route>
       </Routes>

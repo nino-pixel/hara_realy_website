@@ -146,16 +146,18 @@ function buildUnitRecord(parentProperty: Property, form: Partial<Property>, exis
   return {
     ...existing,
     ...form,
-    id: existing?.id ?? String(Date.now()),
+    // Use the pre-assigned property code as the DB primary key so id and
+    // propertyCode stay in sync. Fall back to timestamp if no code was set.
+    id: existing?.id ?? String(form.propertyCode ?? Date.now()),
     title: parentProperty.title,
     location: nextLocation,
     price: String(form.price ?? existing?.price ?? parentProperty.price ?? '').trim() || 'P0',
     image: existing?.image ?? parentProperty.image ?? '',
     status: (form.status as PropertyStatus | undefined) ?? existing?.status ?? 'available',
     type: parentProperty.type,
-    beds: parentProperty.beds ?? 0,
-    baths: parentProperty.baths ?? 0,
-    area: parentProperty.area ?? '',
+    beds: form.beds ?? existing?.beds ?? parentProperty.beds ?? 0,
+    baths: form.baths ?? existing?.baths ?? parentProperty.baths ?? 0,
+    area: String(form.area ?? existing?.area ?? parentProperty.area ?? '').trim(),
     leads: existing?.leads ?? 0,
     updatedAt,
     propertyCode,
@@ -170,15 +172,15 @@ function buildUnitRecord(parentProperty: Property, form: Partial<Property>, exis
     province: parentProperty.province,
     developer: parentProperty.developer,
     yearBuilt: parentProperty.yearBuilt,
-    floorArea: parentProperty.floorArea,
-    lotArea: parentProperty.lotArea,
-    parking: parentProperty.parking,
-    furnished: parentProperty.furnished,
+    floorArea: String(form.floorArea ?? existing?.floorArea ?? parentProperty.floorArea ?? '').trim(),
+    lotArea: String(form.lotArea ?? existing?.lotArea ?? parentProperty.lotArea ?? '').trim(),
+    parking: form.parking ?? existing?.parking ?? parentProperty.parking ?? 0,
+    furnished: form.furnished ?? existing?.furnished ?? parentProperty.furnished,
     publicDescription: parentProperty.publicDescription,
     paymentOptions: parentProperty.paymentOptions,
-    downpayment: parentProperty.downpayment,
-    monthlyEst: parentProperty.monthlyEst,
-    negotiable: parentProperty.negotiable,
+    downpayment: String(form.downpayment ?? existing?.downpayment ?? parentProperty.downpayment ?? '').trim(),
+    monthlyEst: String(form.monthlyEst ?? existing?.monthlyEst ?? parentProperty.monthlyEst ?? '').trim(),
+    negotiable: form.negotiable ?? existing?.negotiable ?? parentProperty.negotiable,
     mortgageInterestRate: parentProperty.mortgageInterestRate,
     showOnWebsite: parentProperty.showOnWebsite !== false,
     featuredListing: false,
@@ -508,7 +510,10 @@ export default function AdminPropertiesPage() {
       const effectivePrice = (form.promoPrice ?? '').trim() || (form.price ?? '')
       const newProperty = {
         ...form,
-        id: String(Date.now()),
+        // Use the pre-assigned property code as the DB primary key so id and
+        // propertyCode stay in sync (CHR-YEAR-NNNNNN). Fall back to timestamp
+        // only if somehow no code was set.
+        id: String(form.propertyCode ?? Date.now()),
         updatedAt,
         leads: 0,
         isPropertyGroup: form.isPropertyGroup === true,

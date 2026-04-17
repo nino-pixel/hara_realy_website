@@ -78,7 +78,7 @@ export function propertyToApiPayload(p: Property): Record<string, unknown> {
     id: String(p.id),
     title: String(p.title ?? '').trim() || 'Untitled',
     location: String(p.location ?? '').trim() || '—',
-    price: String(p.price ?? '').trim() || '₱0',
+    price: p.price ? String(p.price).trim() : undefined,
     type: p.type ?? 'House',
     status: p.status ?? 'draft',
     beds: typeof p.beds === 'number' ? p.beds : Number(p.beds) || 0,

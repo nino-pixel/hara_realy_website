@@ -1,21 +1,21 @@
 import { useEffect, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, type Variants } from 'framer-motion'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { HiMoon, HiSun, HiMenu, HiX } from 'react-icons/hi'
+import { HiMoon, HiSun, HiX } from 'react-icons/hi'
 import { useInquiryLink, useMarketingLinkTo } from '../hooks/useMarketingLinkTo'
 import { useSavedPropertiesCount } from '../hooks/useSavedProperties'
 import { useScrollTopOnRouteChange } from '../hooks/useScrollTopOnRouteChange'
 import { useDarkMode } from '../hooks/useDarkMode'
 import PageTransition from './PageTransition'
-import faviconLogo from '../assets/favicon.png'
+import Footer from './Footer'
 import './Layout.css'
 
-const menuVariants: any = {
+const menuVariants: Variants = {
   closed: { x: '100%', transition: { type: 'spring', stiffness: 300, damping: 35 } },
   open: { x: 0, transition: { type: 'spring', stiffness: 300, damping: 35, staggerChildren: 0.08, delayChildren: 0.2 } },
 }
 
-const itemVariants: any = {
+const itemVariants: Variants = {
   closed: { opacity: 0, x: 25 },
   open: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 300, damping: 30 } },
 }
@@ -87,7 +87,7 @@ export default function Layout() {
         <div className="container header-inner">
           <Link to={homeTo} className="logo" onClick={closeNav}>
             <img
-              src={faviconLogo}
+              src="/favicon.png"
               alt=""
               className="logo-img"
               width={56}
@@ -211,38 +211,7 @@ export default function Layout() {
           </PageTransition>
         </AnimatePresence>
       </main>
-      <footer className="footer">
-        <div className="container footer-inner">
-          <p className="footer-brand">
-            <span className="logo-mark">CHara</span> Realty — Your trusted partner in finding the right property.
-          </p>
-          <div className="footer-links">
-            <Link to={homeTo}>Home</Link>
-            <Link to={propertiesTo}>Properties</Link>
-            <Link to={savedTo}>Saved</Link>
-            <Link to={inquireTo}>Inquire</Link>
-            <Link to={aboutTo}>About</Link>
-            <Link to={helpTo}>Help</Link>
-            <Link to={contactTo}>Contact</Link>
-          </div>
-          <p className="footer-developer">
-            Website by <strong>Antonino Balinado Jr.</strong>
-            <span className="footer-developer-sep" aria-hidden>
-              {' '}
-              ·{' '}
-            </span>
-            <a href="mailto:antoninobalinado756@gmail.com">antoninobalinado756@gmail.com</a>
-            <span className="footer-developer-sep" aria-hidden>
-              {' '}
-              ·{' '}
-            </span>
-            <a href="https://www.facebook.com/ninobalinadojr/" target="_blank" rel="noopener noreferrer">
-              Facebook
-            </a>
-          </p>
-          <p className="footer-copy">© {new Date().getFullYear()} CHara Realty. All rights reserved.</p>
-        </div>
-      </footer>
+      {location.pathname !== '/' && <Footer />}
     </div>
   )
 }

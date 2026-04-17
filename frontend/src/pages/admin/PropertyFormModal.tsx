@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import Swal from 'sweetalert2'
 import FormActions from '../../components/FormActions'
+import PaymentSchemeBuilder from '../../components/PaymentSchemeBuilder'
 import { PROPERTY_TYPES, PROPERTY_STATUS_LABELS, PAYMENT_OPTION_LABELS, type Property, type PropertyType, type PropertyStatus, type PaymentOption, type PriceHistoryEntry } from '../../data/properties'
 import type { PropertyImageUpload } from '../../services/propertiesApi'
 import { optimizeImageForUpload, optimizeImageFiles } from '../../utils/imageUploadOptimize'
@@ -13,6 +14,7 @@ const PAYMENT_OPTIONS: PaymentOption[] = ['cash', 'bank_loan', 'in_house', 'inst
 const TABS = [
   { id: 'basic', label: 'Basic' },
   { id: 'media', label: 'Media' },
+  { id: 'schemes', label: 'Schemes' },
   { id: 'sales', label: 'Sales' },
   { id: 'legal', label: 'Legal' },
   { id: 'admin', label: 'Admin' },
@@ -262,100 +264,102 @@ export default function PropertyFormModal({
                 />
               </div>
             </div>
-            <div className="admin-form-row">
-              <label>Location (display line)</label>
-              <input
-                className="admin-input"
-                value={form.location ?? ''}
-                onChange={(e) => update('location', e.target.value)}
-                placeholder="e.g. Angeles City, Pampanga"
-              />
-            </div>
+            {!form.parentPropertyId && (
+              <div className="admin-form-row">
+                <label>Location (display line)</label>
+                <input
+                  className="admin-input"
+                  value={form.location ?? ''}
+                  onChange={(e) => update('location', e.target.value)}
+                  placeholder="e.g. Angeles City, Pampanga"
+                />
+              </div>
+            )}
           </section>
 
-          <section className="property-form-section">
-            <h3 className="property-form-section-title">Pricing</h3>
-            <div className="admin-form-row">
-              <label>Price</label>
-              <input
-                className="admin-input"
-                inputMode="numeric"
-                autoComplete="off"
-                value={formatPesoInputFromRaw(String(form.price ?? ''))}
-                onChange={(e) => update('price', formatPesoInputFromRaw(e.target.value))}
-                placeholder="₱0"
-              />
-            </div>
-            {(() => {
-              const priceNum = parsePriceToNumber(form.price)
-              const promoNum = parsePriceToNumber(form.promoPrice)
-              const netNum = priceNum > 0 && promoNum >= 0 ? Math.max(0, priceNum - promoNum) : null
-              return netNum !== null && (priceNum > 0 || promoNum > 0) ? (
-                <div className="admin-form-row property-form-net-price">
-                  <label>Net price after discount</label>
-                  <p className="property-form-net-price-value">
-                    ₱{netNum.toLocaleString('en-PH')}
-                  </p>
-                  <p className="form-field-hint">Auto-calculated: Price − Promo discount.</p>
+            {!form.isPropertyGroup && (
+              <section className="property-form-section">
+                <h3 className="property-form-section-title">Pricing</h3>
+                <div className="admin-form-row">
+                  <label>Price</label>
+                  <input
+                    className="admin-input"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    value={formatPesoInputFromRaw(String(form.price ?? ''))}
+                    onChange={(e) => update('price', formatPesoInputFromRaw(e.target.value))}
+                    placeholder="₱0"
+                  />
                 </div>
-              ) : null
-            })()}
-            <div className="admin-form-inline-row">
-              <div className="admin-form-row">
-                <label>Downpayment</label>
-                <input
-                  className="admin-input"
-                  inputMode="numeric"
-                  autoComplete="off"
-                  value={formatPesoInputFromRaw(String(form.downpayment ?? ''))}
-                  onChange={(e) => update('downpayment', formatPesoInputFromRaw(e.target.value))}
-                  placeholder="₱0"
-                />
-              </div>
-              <div className="admin-form-row">
-                <label>Monthly Est.</label>
-                <input
-                  className="admin-input"
-                  value={form.monthlyEst ?? ''}
-                  onChange={(e) => update('monthlyEst', e.target.value)}
-                  placeholder="₱0"
-                />
-              </div>
-            </div>
-            <div className="admin-form-row">
-              <label>Negotiable?</label>
-              <select
-                className="admin-input"
-                value={form.negotiable === true ? 'yes' : form.negotiable === false ? 'no' : ''}
-                onChange={(e) => update('negotiable', e.target.value === 'yes')}
-              >
-                <option value="">—</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-              </select>
-            </div>
-            <div className="admin-form-row">
-              <label className="property-form-label-block">Payment options</label>
-              <div className="property-form-checkbox-group">
-                {PAYMENT_OPTIONS.map((opt) => (
-                  <label key={opt} className="property-form-checkbox-option">
+                {(() => {
+                  const priceNum = parsePriceToNumber(form.price)
+                  const promoNum = parsePriceToNumber(form.promoPrice)
+                  const netNum = priceNum > 0 && promoNum >= 0 ? Math.max(0, priceNum - promoNum) : null
+                  return netNum !== null && (priceNum > 0 || promoNum > 0) ? (
+                    <div className="admin-form-row property-form-net-price">
+                      <label>Net price after discount</label>
+                      <p className="property-form-net-price-value">₱{netNum.toLocaleString('en-PH')}</p>
+                      <p className="form-field-hint">Auto-calculated: Price − Promo discount.</p>
+                    </div>
+                  ) : null
+                })()}
+                <div className="admin-form-inline-row">
+                  <div className="admin-form-row">
+                    <label>Downpayment</label>
                     <input
-                      type="checkbox"
-                      checked={(form.paymentOptions ?? []).includes(opt)}
-                      onChange={(e) => {
-                        const current = form.paymentOptions ?? []
-                        const next = e.target.checked
-                          ? [...current, opt]
-                          : current.filter((o) => o !== opt)
-                        update('paymentOptions', next)
-                      }}
+                      className="admin-input"
+                      inputMode="numeric"
+                      autoComplete="off"
+                      value={formatPesoInputFromRaw(String(form.downpayment ?? ''))}
+                      onChange={(e) => update('downpayment', formatPesoInputFromRaw(e.target.value))}
+                      placeholder="₱0"
                     />
-                    <span>{PAYMENT_OPTION_LABELS[opt]}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          </section>
+                  </div>
+                  <div className="admin-form-row">
+                    <label>Monthly Est.</label>
+                    <input
+                      className="admin-input"
+                      value={form.monthlyEst ?? ''}
+                      onChange={(e) => update('monthlyEst', e.target.value)}
+                      placeholder="₱0"
+                    />
+                  </div>
+                </div>
+                <div className="admin-form-row">
+                  <label>Negotiable?</label>
+                  <select
+                    className="admin-input"
+                    value={form.negotiable === true ? 'yes' : form.negotiable === false ? 'no' : ''}
+                    onChange={(e) => update('negotiable', e.target.value === 'yes')}
+                  >
+                    <option value="">—</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </div>
+                <div className="admin-form-row">
+                  <label className="property-form-label-block">Payment options</label>
+                  <div className="property-form-checkbox-group">
+                    {PAYMENT_OPTIONS.map((opt) => (
+                      <label key={opt} className="property-form-checkbox-option">
+                        <input
+                          type="checkbox"
+                          checked={(form.paymentOptions ?? []).includes(opt)}
+                          onChange={(e) => {
+                            const current = form.paymentOptions ?? []
+                            const next = e.target.checked
+                              ? [...current, opt]
+                              : current.filter((o) => o !== opt)
+                            update('paymentOptions', next)
+                          }}
+                        />
+                        <span>{PAYMENT_OPTION_LABELS[opt]}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
 
           </>
           )}
@@ -598,6 +602,21 @@ export default function PropertyFormModal({
           </section>
           )}
 
+          {activeTab === 'schemes' && (
+          <section className="property-form-section">
+            <h3 className="property-form-section-title">Payment Schemes</h3>
+            <p className="form-field-hint" style={{ marginBottom: 14 }}>
+              Add one payment option for each financing strategy offered by the developer.
+              Line items are flexible — you can match any developer's computation sheet.
+              Monthly amortisation is auto-calculated via the PMT formula but can be overridden.
+            </p>
+            <PaymentSchemeBuilder
+              schemes={form.paymentSchemes ?? []}
+              onChange={(schemes) => setForm((prev) => ({ ...prev, paymentSchemes: schemes }))}
+            />
+          </section>
+          )}
+
           {activeTab === 'sales' && (
           <section className="property-form-section">
             <h3 className="property-form-section-title">Status & Sales</h3>
@@ -622,41 +641,45 @@ export default function PropertyFormModal({
                 onChange={(e) => update('availabilityDate', e.target.value)}
               />
             </div>
-            <div className="admin-form-inline-row">
-              <div className="admin-form-row">
-                <label>Promo price</label>
-                <input
-                  className="admin-input"
-                  inputMode="numeric"
-                  autoComplete="off"
-                  value={formatPesoInputFromRaw(String(form.promoPrice ?? ''))}
-                  onChange={(e) => update('promoPrice', formatPesoInputFromRaw(e.target.value))}
-                  placeholder="₱0 (discount amount)"
-                />
-              </div>
-              <div className="admin-form-row">
-                <label>Promo until</label>
-                <input
-                  className="admin-input"
-                  type="date"
-                  value={form.promoUntil ?? ''}
-                  onChange={(e) => update('promoUntil', e.target.value)}
-                  placeholder="Optional"
-                />
-              </div>
-            </div>
-            {(() => {
-              const priceNum = parsePriceToNumber(form.price)
-              const promoNum = parsePriceToNumber(form.promoPrice)
-              const netNum = priceNum > 0 && promoNum >= 0 ? Math.max(0, priceNum - promoNum) : null
-              return netNum !== null && priceNum > 0 ? (
-                <div className="admin-form-row property-form-net-price">
-                  <label>Net price after discount</label>
-                  <p className="property-form-net-price-value">₱{netNum.toLocaleString('en-PH')}</p>
-                  <p className="form-field-hint">Auto-calculated: Price − Promo discount.</p>
+            {!form.isPropertyGroup && (
+              <>
+                <div className="admin-form-inline-row">
+                  <div className="admin-form-row">
+                    <label>Promo price</label>
+                    <input
+                      className="admin-input"
+                      inputMode="numeric"
+                      autoComplete="off"
+                      value={formatPesoInputFromRaw(String(form.promoPrice ?? ''))}
+                      onChange={(e) => update('promoPrice', formatPesoInputFromRaw(e.target.value))}
+                      placeholder="₱0 (discount amount)"
+                    />
+                  </div>
+                  <div className="admin-form-row">
+                    <label>Promo until</label>
+                    <input
+                      className="admin-input"
+                      type="date"
+                      value={form.promoUntil ?? ''}
+                      onChange={(e) => update('promoUntil', e.target.value)}
+                      placeholder="Optional"
+                    />
+                  </div>
                 </div>
-              ) : null
-            })()}
+                {(() => {
+                  const priceNum = parsePriceToNumber(form.price)
+                  const promoNum = parsePriceToNumber(form.promoPrice)
+                  const netNum = priceNum > 0 && promoNum >= 0 ? Math.max(0, priceNum - promoNum) : null
+                  return netNum !== null && priceNum > 0 ? (
+                    <div className="admin-form-row property-form-net-price">
+                      <label>Net price after discount</label>
+                      <p className="property-form-net-price-value">₱{netNum.toLocaleString('en-PH')}</p>
+                      <p className="form-field-hint">Auto-calculated: Price − Promo discount.</p>
+                    </div>
+                  ) : null
+                })()}
+              </>
+            )}
             {(form.priceHistory ?? []).length > 0 && (
               <div className="admin-form-row property-form-price-history">
                 <label className="property-form-label-block">Price history</label>
@@ -700,83 +723,83 @@ export default function PropertyFormModal({
           </section>
           )}
 
-          {activeTab === 'basic' && (
-          <section className="property-form-section">
-            <h3 className="property-form-section-title">Details</h3>
-            <div className="admin-form-inline-row">
+          {activeTab === 'basic' && !form.isPropertyGroup && (
+            <section className="property-form-section">
+              <h3 className="property-form-section-title">Details</h3>
+              <div className="admin-form-inline-row">
+                <div className="admin-form-row">
+                  <label>Floor Area</label>
+                  <input
+                    className="admin-input"
+                    value={form.floorArea ?? form.area ?? ''}
+                    onChange={(e) => update('floorArea', e.target.value)}
+                    placeholder="e.g. 95 sqm"
+                  />
+                </div>
+                <div className="admin-form-row">
+                  <label>Lot Area</label>
+                  <input
+                    className="admin-input"
+                    value={form.lotArea ?? ''}
+                    onChange={(e) => update('lotArea', e.target.value)}
+                    placeholder="e.g. 120 sqm"
+                  />
+                </div>
+              </div>
+              <div className="admin-form-inline-row">
+                <div className="admin-form-row">
+                  <label>Bedrooms</label>
+                  <input
+                    className="admin-input"
+                    type="number"
+                    min={0}
+                    value={form.beds ?? 0}
+                    onChange={(e) => update('beds', parseInt(e.target.value, 10) || 0)}
+                  />
+                </div>
+                <div className="admin-form-row">
+                  <label>Bathrooms</label>
+                  <input
+                    className="admin-input"
+                    type="number"
+                    min={0}
+                    value={form.baths ?? 0}
+                    onChange={(e) => update('baths', parseInt(e.target.value, 10) || 0)}
+                  />
+                </div>
+                <div className="admin-form-row">
+                  <label>Parking</label>
+                  <input
+                    className="admin-input"
+                    type="number"
+                    min={0}
+                    value={form.parking ?? 0}
+                    onChange={(e) => update('parking', parseInt(e.target.value, 10) || 0)}
+                  />
+                </div>
+              </div>
               <div className="admin-form-row">
-                <label>Floor Area</label>
+                <label>Area (display)</label>
                 <input
                   className="admin-input"
-                  value={form.floorArea ?? form.area ?? ''}
-                  onChange={(e) => update('floorArea', e.target.value)}
+                  value={form.area ?? ''}
+                  onChange={(e) => update('area', e.target.value)}
                   placeholder="e.g. 95 sqm"
                 />
               </div>
               <div className="admin-form-row">
-                <label>Lot Area</label>
-                <input
+                <label>Furnished?</label>
+                <select
                   className="admin-input"
-                  value={form.lotArea ?? ''}
-                  onChange={(e) => update('lotArea', e.target.value)}
-                  placeholder="e.g. 120 sqm"
-                />
+                  value={form.furnished === true ? 'yes' : form.furnished === false ? 'no' : ''}
+                  onChange={(e) => update('furnished', e.target.value === 'yes')}
+                >
+                  <option value="">—</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
               </div>
-            </div>
-            <div className="admin-form-inline-row">
-              <div className="admin-form-row">
-                <label>Bedrooms</label>
-                <input
-                  className="admin-input"
-                  type="number"
-                  min={0}
-                  value={form.beds ?? 0}
-                  onChange={(e) => update('beds', parseInt(e.target.value, 10) || 0)}
-                />
-              </div>
-              <div className="admin-form-row">
-                <label>Bathrooms</label>
-                <input
-                  className="admin-input"
-                  type="number"
-                  min={0}
-                  value={form.baths ?? 0}
-                  onChange={(e) => update('baths', parseInt(e.target.value, 10) || 0)}
-                />
-              </div>
-              <div className="admin-form-row">
-                <label>Parking</label>
-                <input
-                  className="admin-input"
-                  type="number"
-                  min={0}
-                  value={form.parking ?? 0}
-                  onChange={(e) => update('parking', parseInt(e.target.value, 10) || 0)}
-                />
-              </div>
-            </div>
-            <div className="admin-form-row">
-              <label>Area (display)</label>
-              <input
-                className="admin-input"
-                value={form.area ?? ''}
-                onChange={(e) => update('area', e.target.value)}
-                placeholder="e.g. 95 sqm"
-              />
-            </div>
-            <div className="admin-form-row">
-              <label>Furnished?</label>
-              <select
-                className="admin-input"
-                value={form.furnished === true ? 'yes' : form.furnished === false ? 'no' : ''}
-                onChange={(e) => update('furnished', e.target.value === 'yes')}
-              >
-                <option value="">—</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-              </select>
-            </div>
-          </section>
+            </section>
           )}
 
           {activeTab === 'admin' && (

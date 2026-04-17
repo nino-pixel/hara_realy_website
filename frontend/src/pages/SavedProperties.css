@@ -6,6 +6,11 @@
   margin-bottom: 2rem;
 }
 
+.saved-properties-header .page-title,
+.saved-properties-header .page-subtitle {
+  color: var(--color-text);
+}
+
 .saved-properties-subtitle {
   max-width: 36rem;
 }

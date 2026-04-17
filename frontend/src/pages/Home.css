@@ -1,35 +1,26 @@
-/**
- * Full-page vertical scroll snap (Home only).
- * Parent scroll container: `html` — toggled via `home-scroll-snap` class from Home.tsx.
- */
+/* Full-page imperative snapping styles */
 html.home-scroll-snap {
-  scroll-behavior: smooth;
-  scroll-snap-type: y mandatory;
-  /* Align snap points with sticky header (4rem) */
-  scroll-padding-top: 4rem;
-  /* Hide scrollbar on all browsers while keeping scroll functionality */
-  scrollbar-width: none;        /* Firefox */
-  -ms-overflow-style: none;     /* IE / Edge */
+  overflow: hidden; /* Stop standard global scrolling entirely on Home */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 html.home-scroll-snap::-webkit-scrollbar {
-  display: none;                /* Chrome, Safari */
+  display: none;
 }
 
-/*
- * Without a snap target after the last Home section, mandatory snap can’t “finish”
- * past the featured block, so the layout footer never fully scrolls into view.
- * IO-based reveal animations are unchanged (they only depend on intersection).
- */
-html.home-scroll-snap footer.footer {
-  scroll-snap-align: start;
-  scroll-snap-stop: normal;
+.home-fullpage-viewport {
+  position: relative;
+  width: 100%;
+  height: calc(100dvh - 4rem);
+  overflow: hidden;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  html.home-scroll-snap {
-    scroll-snap-type: y proximity;
-    scroll-behavior: auto;
-  }
+.home-fullpage-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: transform;
 }
 
 .home .hero {
@@ -41,28 +32,22 @@ html.home-scroll-snap footer.footer {
   text-align: center;
 }
 .home .hero.hero--has-slideshow {
-  min-height: clamp(22rem, 52vw, 28rem);
   background: var(--color-hero);
 }
 
-/* Scroll snap: three full-viewport panels (must follow base .hero rules for cascade) */
 .home--scroll-snap .home-snap-section {
-  scroll-snap-stop: normal;
   box-sizing: border-box;
-  min-height: calc(100dvh - 4rem);
+  height: calc(100dvh - 4rem);
+  flex-shrink: 0;
+  width: 100%;
+  overflow: hidden; /* Lock internal overflow globally */
 }
 
-/* Full-screen slides: center in viewport; strong snap stop on hero + trust */
-.home--scroll-snap .hero.home-snap-section,
-.home--scroll-snap .home-snap-panel--trust.home-snap-section {
-  scroll-snap-align: center;
-  scroll-snap-stop: always;
-}
-
-/* Tall panel: align to top so users read from the start */
-.home--scroll-snap .home-snap-panel--featured.home-snap-section {
-  scroll-snap-align: start;
-  scroll-snap-stop: normal;
+/* Allow users to freely scroll inside panels that might overflow (featured grid, footer/cta on mobile) */
+.home--scroll-snap .home-snap-panel--featured.home-snap-section,
+.home--scroll-snap .home-snap-panel--footer.home-snap-section {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .home--scroll-snap .hero.hero--has-slideshow {
@@ -133,10 +118,6 @@ html.home-scroll-snap footer.footer {
 .home--scroll-snap .home-snap-panel--trust .home-trust .section-title {
   margin-top: 0;
   flex-shrink: 0;
-}
-
-.home--scroll-snap .home-snap-panel--featured.home-snap-section {
-  min-height: max(calc(100dvh - 4rem), min-content);
 }
 
 /* Enter-viewport: soft fade + slide-up (high-end easing) */

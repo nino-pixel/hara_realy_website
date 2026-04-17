@@ -29,7 +29,6 @@ import {
   Cell,
   Legend,
 } from 'recharts'
-import { ResetTool } from '../../components/admin/ResetTool'
 import type { InquiryStatus } from '../../data/mockAdmin'
 import { fetchClients } from '../../services/clientsService'
 import { fetchInquiries } from '../../services/inquiriesService'
@@ -500,13 +499,7 @@ export default memo(function AdminDashboard() {
         </div>
       </section>
       
-      {/* 
-        This tool helps clean up local simulation cache if data looks out of sync.
-        It has no effect on the database, only the UI state.
-      */}
-      <div className="dashboard-footer-tools mt-12 pb-8">
-        <ResetTool />
-      </div>
+
     </div>
   )
 })

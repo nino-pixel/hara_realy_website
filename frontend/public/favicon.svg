@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Chara Realty">
-  <!-- White disc: high contrast on dark tabs (similar strategy to Google’s favicon) -->
-  <circle cx="32" cy="32" r="30" fill="#ffffff" stroke="#e5e7eb" stroke-width="0.75"/>
-  <!-- Large, simple house mark (fills most of the disc) -->
-  <path fill="#b8952e" d="M32 10 L54 38H10z"/>
-  <rect x="12" y="38" width="40" height="16" fill="#0b1b32"/>
-  <rect x="24" y="42" width="16" height="12" rx="1.5" fill="#f1f5f9"/>
-</svg>

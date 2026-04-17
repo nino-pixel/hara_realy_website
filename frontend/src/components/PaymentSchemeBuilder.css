@@ -1,0 +1,326 @@
+/* ─── PaymentSchemeBuilder styles ─────────────────────────────────────────── */
+
+.psb-root {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Empty state ── */
+.psb-empty-state {
+  padding: 28px 20px;
+  text-align: center;
+  border: 2px dashed var(--border, #2d3748);
+  border-radius: 10px;
+  background: var(--surface-alt, rgba(255,255,255,0.03));
+}
+.psb-empty-title { font-weight: 600; color: var(--text, #e2e8f0); margin: 0 0 6px; }
+.psb-empty-desc  { font-size: 0.82rem; color: var(--muted, #718096); margin: 0; line-height: 1.5; }
+
+/* ── Scheme card ── */
+.psb-card {
+  border: 1px solid var(--border, #2d3748);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface, rgba(255,255,255,0.04));
+}
+
+.psb-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--surface-alt, rgba(255,255,255,0.06));
+  border-bottom: 1px solid var(--border, #2d3748);
+  gap: 8px;
+}
+
+.psb-card-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text, #e2e8f0);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0;
+  flex: 1;
+  text-align: left;
+}
+.psb-card-chevron { font-size: 0.75rem; opacity: 0.7; }
+.psb-card-label   { flex: 1; }
+
+.psb-card-header-acts { display: flex; gap: 4px; }
+
+.psb-hdr-btn {
+  background: none;
+  border: 1px solid var(--border, #2d3748);
+  border-radius: 5px;
+  color: var(--muted, #718096);
+  cursor: pointer;
+  font-size: 0.78rem;
+  padding: 3px 7px;
+  transition: background 0.15s, color 0.15s;
+}
+.psb-hdr-btn:hover:not(:disabled) { background: var(--primary, rgba(99,179,237,0.15)); color: var(--text, #e2e8f0); }
+.psb-hdr-btn:disabled { opacity: 0.3; cursor: default; }
+.psb-hdr-btn--del:hover { background: rgba(245,101,101,0.15) !important; color: #fc8181 !important; }
+
+.psb-card-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Meta row (name + notes) ── */
+.psb-meta-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.psb-meta-field { display: flex; flex-direction: column; gap: 4px; min-width: 200px; }
+.psb-meta-field--grow { flex: 1; }
+.psb-label { font-size: 0.76rem; font-weight: 600; color: var(--muted, #718096); text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* ── Section titles ── */
+.psb-section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted, #718096);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.psb-section-title--fin { margin-top: 6px; }
+
+.psb-section-hint {
+  font-size: 0.74rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--muted, #718096);
+  opacity: 0.75;
+}
+.psb-principal-badge {
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #68d391;
+  background: rgba(104, 211, 145, 0.1);
+  border: 1px solid rgba(104, 211, 145, 0.25);
+  border-radius: 20px;
+  padding: 2px 10px;
+}
+
+/* ── Table ── */
+.psb-table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border, #2d3748); }
+
+.psb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.psb-th {
+  padding: 7px 10px;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted, #718096);
+  background: var(--surface-alt, rgba(255,255,255,0.04));
+  border-bottom: 1px solid var(--border, #2d3748);
+  white-space: nowrap;
+}
+.psb-th--label   { min-width: 140px; }
+.psb-th--type    { min-width: 120px; }
+.psb-th--input   { min-width: 160px; }
+.psb-th--amount  { min-width: 110px; text-align: right; }
+.psb-th--monthly { min-width: 110px; text-align: right; }
+.psb-th--note    { min-width: 120px; }
+.psb-th--acts    { width: 80px; }
+.psb-th--xs      { min-width: 70px; }
+.psb-th--fmonthly { min-width: 150px; }
+
+.psb-line td, .psb-fterm td {
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--border-subtle, rgba(45,55,72,0.6));
+  vertical-align: middle;
+}
+.psb-line:last-child td, .psb-fterm:last-child td { border-bottom: none; }
+
+/* Subtotal rows — highlighted */
+.psb-line--sub td {
+  background: rgba(99, 179, 237, 0.06);
+  border-top: 1px solid rgba(99, 179, 237, 0.2);
+  border-bottom: 1px solid rgba(99, 179, 237, 0.2);
+}
+
+/* ── Inputs inside the table ── */
+.psb-inp {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--input-bg, rgba(0,0,0,0.25));
+  border: 1px solid var(--border, #2d3748);
+  border-radius: 5px;
+  color: var(--text, #e2e8f0);
+  font-size: 0.82rem;
+  padding: 4px 8px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.psb-inp:focus { border-color: var(--primary, #63b3ed); }
+.psb-inp::placeholder { color: var(--muted-dim, #4a5568); font-size: 0.78rem; }
+.psb-inp--full { width: 100%; }
+.psb-inp--num  { text-align: right; }
+.psb-inp--xs   { width: 72px; }
+.psb-inp--note { font-size: 0.76rem; opacity: 0.8; }
+.psb-inp--ta   { resize: vertical; min-height: 48px; font-size: 0.82rem; }
+
+.psb-sel { cursor: pointer; }
+
+/* Percent input with % sign */
+.psb-pct-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.psb-pct-sign { color: var(--muted, #718096); font-size: 0.82rem; flex-shrink: 0; }
+.psb-pct-result { font-size: 0.75rem; color: #68d391; margin-top: 2px; display: block; }
+
+/* Installment: two inputs side by side */
+.psb-inst-wrap { display: flex; gap: 6px; align-items: center; }
+
+/* AUTO-SUM badge */
+.psb-auto-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #63b3ed;
+  background: rgba(99, 179, 237, 0.12);
+  border: 1px solid rgba(99, 179, 237, 0.25);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+/* Amount column */
+.psb-td--amount  { text-align: right; white-space: nowrap; }
+.psb-td--monthly { text-align: right; white-space: nowrap; }
+.psb-sub-val  { font-size: 0.88rem; font-weight: 700; color: #63b3ed; }
+.psb-amt-val  { font-size: 0.82rem; color: var(--text, #e2e8f0); }
+.psb-amt-val--neg { color: #fc8181; }
+
+.psb-monthly-val { font-size: 0.82rem; color: #68d391; }
+.psb-monthly-suffix { font-size: 0.72rem; margin-left: 2px; color: var(--muted, #718096); }
+
+/* Financing monthly column */
+.psb-td--fmonthly { white-space: nowrap; }
+.psb-fmonthly-wrap { display: flex; align-items: center; gap: 6px; }
+.psb-auto-hint {
+  font-size: 0.75rem;
+  color: #68d391;
+  white-space: nowrap;
+}
+.psb-fmonthly-display {
+  font-size: 0.75rem;
+  color: #68d391;
+  display: block;
+  margin-top: 2px;
+}
+.psb-reset-btn {
+  background: none;
+  border: 1px solid var(--border, #2d3748);
+  border-radius: 4px;
+  color: var(--muted, #718096);
+  cursor: pointer;
+  font-size: 0.78rem;
+  padding: 2px 5px;
+  flex-shrink: 0;
+}
+.psb-reset-btn:hover { color: #63b3ed; border-color: #63b3ed; }
+
+/* Action buttons */
+.psb-td--acts { white-space: nowrap; }
+.psb-act {
+  background: none;
+  border: 1px solid var(--border, #2d3748);
+  border-radius: 4px;
+  color: var(--muted, #718096);
+  cursor: pointer;
+  font-size: 0.78rem;
+  padding: 2px 6px;
+  margin-right: 2px;
+  transition: background 0.15s, color 0.15s;
+}
+.psb-act:hover:not(:disabled) { background: var(--surface-alt, rgba(255,255,255,0.08)); color: var(--text, #e2e8f0); }
+.psb-act:disabled   { opacity: 0.25; cursor: default; }
+.psb-act--del:hover { background: rgba(245,101,101,0.15) !important; color: #fc8181 !important; border-color: rgba(245,101,101,0.4) !important; }
+
+/* Add line item row of buttons */
+.psb-add-line-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.psb-add-label { font-size: 0.76rem; color: var(--muted, #718096); }
+
+.psb-add-btn {
+  font-size: 0.78rem;
+  padding: 4px 10px;
+  border: 1px dashed var(--border, #2d3748);
+  border-radius: 6px;
+  background: none;
+  color: var(--muted, #718096);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.psb-add-btn:hover {
+  border-color: var(--primary, #63b3ed);
+  color: var(--primary, #63b3ed);
+  background: rgba(99, 179, 237, 0.06);
+}
+
+/* Warning hint */
+.psb-warn {
+  font-size: 0.76rem;
+  color: #f6ad55;
+  align-self: center;
+}
+
+/* Empty row inside table */
+.psb-empty-row {
+  text-align: center;
+  color: var(--muted, #718096);
+  font-size: 0.8rem;
+  padding: 16px 10px;
+  font-style: italic;
+}
+
+/* Add scheme button */
+.psb-add-scheme-btn {
+  padding: 10px 18px;
+  border: 2px dashed var(--border, #2d3748);
+  border-radius: 10px;
+  background: none;
+  color: var(--muted, #718096);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  width: 100%;
+}
+.psb-add-scheme-btn:hover {
+  border-color: var(--primary, #63b3ed);
+  color: var(--primary, #63b3ed);
+  background: rgba(99, 179, 237, 0.06);
+}
